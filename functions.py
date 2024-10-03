@@ -1,6 +1,7 @@
 # This file will consist of functions used through the EDA notebook
 
 # Imports
+import pandas as pd
 
 # Outliers
 def IQR_outliers(df: pd.DataFrame,
