@@ -3,6 +3,14 @@
 # Imports
 import pandas as pd
 
+# Missing Values
+# Create a function to impute missing values of age
+def impute_age(row):
+    if np.isnan(row['customer_age']):
+        return int(round(age_medians.get(row['region_cuisine_group'], np.nan)))
+    else:
+        return row['customer_age']
+    
 # Outliers
 def IQR_outliers(df: pd.DataFrame,
                   variables: list[str]
