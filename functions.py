@@ -3,6 +3,14 @@
 # Imports
 import pandas as pd
 
+# Missing Values
+# Create a function to impute missing values of age
+def impute_age(row):
+    if np.isnan(row['customer_age']):
+        return int(round(age_medians.get(row['region_cuisine_group'], np.nan)))
+    else:
+        return row['customer_age']
+    
 # Outliers
 def IQR_outliers(df: pd.DataFrame,
                   variables: list[str]
@@ -52,6 +60,10 @@ def IQR_outliers(df: pd.DataFrame,
 
 # Feature Engineering
 def avg_hour(row):
+    """
+    Computes the average hour when orders were placed, 
+    weighted by the number of orders at each hour.
+    """
     total_orders = row.sum()
     
     if total_orders == 0:
