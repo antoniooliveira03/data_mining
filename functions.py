@@ -2,6 +2,7 @@
 
 # Imports
 import pandas as pd
+import numpy as np
 
 # Missing Values
 # Create a function to impute missing values of age
