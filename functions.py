@@ -60,6 +60,10 @@ def IQR_outliers(df: pd.DataFrame,
 
 # Feature Engineering
 def avg_hour(row):
+    """
+    Computes the average hour when orders were placed, 
+    weighted by the number of orders at each hour.
+    """
     total_orders = row.sum()
     
     if total_orders == 0:
