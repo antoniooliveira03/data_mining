@@ -4,6 +4,30 @@
 import pandas as pd
 import numpy as np
 
+# Missing values summary
+def missing_value_summary(dataframe):
+    nan_columns = dataframe.columns[dataframe.isna().any()].tolist()
+    
+    summary_data = []
+    
+    for column in nan_columns:
+
+        nan_number = dataframe[column].isna().sum()
+
+        nan_percentage = (nan_number / len(dataframe)) * 100
+
+        unique_values = dataframe[column].nunique()
+        
+        summary_data.append({
+            'Unique Values': unique_values,
+            'NaN Values': nan_number,
+            'Percentage NaN': nan_percentage
+        })
+    
+    summary = pd.DataFrame(summary_data, index=nan_columns)
+    
+    return summary
+
 # Missing Values
 # Create a function to impute missing values of age
 def impute_age(row):
@@ -72,3 +96,4 @@ def avg_hour(row):
     
     weighted_sum_hours = (row.index.str.replace('HR_', '').astype(int) * row).sum()
     return weighted_sum_hours / total_orders
+
