@@ -37,7 +37,7 @@ def impute_age(row):
     else:
         return row['customer_age']
     
-#################### Outliers ##############################
+#################### Outliers ###############################
 def IQR_outliers(df: pd.DataFrame,
                   variables: list[str]
                   ) -> None:
