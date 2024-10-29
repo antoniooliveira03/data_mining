@@ -1,10 +1,11 @@
-# This file will consist of functions used through the EDA notebook
+# This file will consist of functions used through the notebooks
 
-# Imports
+#################### Imports ##############################
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
-# Missing values summary
+#################### Missing values summary ##############################
 def missing_value_summary(dataframe):
     nan_columns = dataframe.columns[dataframe.isna().any()].tolist()
     
@@ -36,7 +37,7 @@ def impute_age(row):
     else:
         return row['customer_age']
     
-# Outliers
+#################### Outliers ##############################
 def IQR_outliers(df: pd.DataFrame,
                   variables: list[str]
                   ) -> None:
@@ -83,7 +84,53 @@ def IQR_outliers(df: pd.DataFrame,
         print()
 
 
-# Feature Engineering
+def plot_multiple_boxes_with_outliers1(data, columns, ncols=2):
+    """
+    Plots box plots for specified columns in the DataFrame and highlights the outliers.
+    
+    Parameters:
+    data (pd.DataFrame): The DataFrame containing the data.
+    columns (list): A list of column names to plot.
+    ncols (int): Number of columns in the subplot grid.
+    """
+    num_columns = len(columns)
+    nrows = (num_columns + ncols - 1) // ncols  # Calculates the number of rows needed
+
+    plt.figure(figsize=(8 * ncols, 4 * nrows))
+
+    for i, column in enumerate(columns):
+        # Calculate quartiles and IQR
+        Q1 = data[column].quantile(0.25)
+        Q3 = data[column].quantile(0.75)
+        IQR = Q3 - Q1
+
+        # Determine the outlier thresholds
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+
+        # Identify outliers
+        outliers = data[(data[column] < lower_bound) | (data[column] > upper_bound)][column]
+
+        # Create the box plot for the current column
+        plt.subplot(nrows, ncols, i + 1)  # Create a subplot grid
+        plt.boxplot(data[column], vert=False, widths=0.7,
+                    patch_artist=True, boxprops=dict(facecolor='skyblue', color='black'),
+                    medianprops=dict(color='black'))
+
+        # Scatter outliers
+        plt.scatter(outliers, [1] * len(outliers), color='red', marker='o', label='Outliers')
+
+        # Customize the plot
+        plt.title(f'Box Plot of {column} with Outliers')
+        plt.xlabel('Value')
+        plt.yticks([])
+        plt.legend()
+
+    plt.tight_layout()  # Adjust subplots to fit into the figure area.
+    plt.show()
+
+
+#################### Feature Engineering ##############################
 def avg_hour(row):
     """
     Computes the average hour when orders were placed, 
