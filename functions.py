@@ -114,7 +114,7 @@ def plot_multiple_boxes_with_outliers1(data, columns, ncols=2):
         # Create the box plot for the current column
         plt.subplot(nrows, ncols, i + 1)  # Create a subplot grid
         plt.boxplot(data[column], vert=False, widths=0.7,
-                    patch_artist=True, boxprops=dict(facecolor='skyblue', color='black'),
+                    patch_artist=True, boxprops=dict(facecolor='#4CAF50', color='black'),
                     medianprops=dict(color='black'))
 
         # Scatter outliers
