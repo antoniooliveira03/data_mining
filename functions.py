@@ -5,6 +5,19 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+
+#################### Histograms ##############################
+
+def draw_histograms(df, variables, n_rows, n_cols):
+    fig = plt.figure(figsize=(n_cols * 6, n_rows * 6))  
+    for i, var_name in enumerate(variables):
+        ax = fig.add_subplot(n_rows, n_cols, i + 1)
+        df[var_name].hist(bins=10, ax=ax, color='#4CAF50', edgecolor='black') 
+        ax.set_title(var_name + " Distribution")
+        ax.grid(False)
+    fig.tight_layout()
+    plt.show()
+
 #################### Missing values summary ##############################
 def missing_value_summary(dataframe):
     nan_columns = dataframe.columns[dataframe.isna().any()].tolist()
@@ -129,6 +142,23 @@ def plot_multiple_boxes_with_outliers1(data, columns, ncols=2):
     plt.tight_layout()  # Adjust subplots to fit into the figure area.
     plt.show()
 
+
+def cap_outliers(data):
+    
+    for column in data.columns:
+        # Calculating the quartiles and interquartile range
+        q1 = np.percentile(data[column], 25)
+        q3 = np.percentile(data[column], 75)
+        iqr = q3 - q1
+
+        # Setting the boundaries for outliers
+        lower_bound = q1 - (1.5 * iqr)
+        upper_bound = q3 + (1.5 * iqr)
+
+        # Capping the outliers
+        data[column] = data[column].apply(
+            lambda x: lower_bound if x < lower_bound else (upper_bound if x > upper_bound else x)
+        )
 
 #################### Feature Engineering ##############################
 def avg_hour(row):
