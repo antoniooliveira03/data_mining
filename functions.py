@@ -4,7 +4,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.cluster.hierarchy import dendrogram
 
 
 #################### Histograms ##############################
@@ -174,67 +173,4 @@ def avg_hour(row):
     
     weighted_sum_hours = (row.index.str.replace('HR_', '').astype(int) * row).sum()
     return weighted_sum_hours / total_orders
-
-#################### Clustering ##############################
-
-def plot_dendrogram(model, **kwargs):
-    '''
-    Create linkage matrix and then plot the dendrogram
-    Arguments: 
-    - model(HierarchicalClustering Model): hierarchical clustering model.
-    - **kwargs
-    Returns:
-    None, but dendrogram plot is produced.
-    '''
-    # create the counts of samples under each node
-    counts = np.zeros(model.children_.shape[0])
-    n_samples = len(model.labels_)
-    for i, merge in enumerate(model.children_):
-        current_count = 0
-        for child_idx in merge:
-            if child_idx < n_samples:
-                current_count += 1  # leaf node
-            else:
-                current_count += counts[child_idx - n_samples]
-        counts[i] = current_count
-
-    linkage_matrix = np.column_stack(
-        [model.children_, model.distances_, counts]
-    ).astype(float)
-    
-    # Plot the dendrogram
-    dendrogram(linkage_matrix, **kwargs)
-
-def plot_dim_reduction(embedding, targets = None, 
-                       technique = 'UMAP',
-                       figsize = (10, 7)):
-    
-    plt.figure(figsize=figsize)
-    
-    if targets is not None:
-        # Ensure targets are in integer format for color mapping
-        labels = np.unique(targets)
-        scatter = plt.scatter(
-            embedding[:, 0], 
-            embedding[:, 1], 
-            c=np.array(targets).astype(int), 
-            cmap='tab10'
-        )
-
-        # Create a legend with the class labels and colors
-        handles = [plt.scatter([], [], color=plt.cm.tab10(i), label=label) for i, label in enumerate(labels)]
-        plt.legend(handles=handles, title='Clusters')
-
-        
-    else:
-        plt.scatter(embedding[:, 0], embedding[:, 1], s=5)
-
-    if technique == 'UMAP':
-        plt.title('UMAP Projection')
-    elif technique == 't-SNE':
-        plt.title('t-SNE Projection')
-    else:
-        plt.title(f'{technique} Projection')
-
-    plt.show()
 
