@@ -4,7 +4,7 @@ customer_info = [
 ]
 
 temporal_data = [
-    'first_order', 'last_order', 'last_promo', 'days_between',
+    'first_order', 'last_order', 'days_between',
     *['HR_' + str(i) for i in range(24)], 
     *['DOW_' + str(i) for i in range(7)], 
     '0_7h', '8_14h', '15_19h', '20_23h'
