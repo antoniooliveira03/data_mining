@@ -166,11 +166,12 @@ def avg_hour(row):
     """
     Computes the average hour when orders were placed, 
     weighted by the number of orders at each hour.
+    If no orders are placed, returns 0.
     """
     total_orders = row.sum()
     
     if total_orders == 0:
-        return None  
+        return 0  
     
     weighted_sum_hours = (row.index.str.replace('HR_', '').astype(int) * row).sum()
     return weighted_sum_hours / total_orders
