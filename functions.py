@@ -4,7 +4,11 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 from scipy.cluster.hierarchy import dendrogram
+from sklearn.metrics import silhouette_score, silhouette_samples
+import matplotlib.cm as cm
+from sklearn.cluster import KMeans
 
 
 #################### Histograms ##############################
@@ -239,3 +243,88 @@ def plot_dim_reduction(embedding, targets = None,
 
     plt.show()
 
+## K-Means Silhouette
+def plot_silhouette(temp_data, possible_k):   
+    avg_silhouette = []
+    for k in possible_k:
+
+        # Initialize and fit KMeans
+        kmclust = KMeans(n_clusters=k, init='k-means++', n_init=15, random_state=1)
+        cluster_labels = kmclust.fit_predict(temp_data)
+
+        # Compute silhouette scores
+        silhouette_avg = silhouette_score(temp_data, cluster_labels)
+        avg_silhouette.append(silhouette_avg)
+        print(f"For n_clusters = {k}, the average silhouette_score is: {silhouette_avg:.4f}")
+
+        sample_silhouette_values = silhouette_samples(temp_data, cluster_labels)
+
+        # Create figure
+        fig, ax = plt.subplots(figsize=(13, 7))
+
+        # Initialize vertical position for plotting clusters
+        y_position = 0
+
+        for i in range(k):
+            # Extract and sort silhouette scores for cluster i
+            cluster_values = sample_silhouette_values[cluster_labels == i]
+            cluster_values.sort()
+
+            # Compute cluster size
+            cluster_size = len(cluster_values)
+
+            # Fill the silhouette scores for cluster i
+            color = cm.nipy_spectral(float(i) / k)
+            ax.fill_betweenx(
+                range(y_position, y_position + cluster_size),
+                0,
+                cluster_values,
+                facecolor=color,
+                edgecolor=color,
+                alpha=0.7,
+            )
+
+            # Label clusters in the middle of each block
+            ax.text(-0.05, y_position + cluster_size / 2, str(i))
+
+            # Update y_position for the next cluster
+            y_position += cluster_size + 10
+
+        # Plot the average silhouette score as a vertical line
+        ax.axvline(x=silhouette_avg, color="red", linestyle="--", label=f"Avg: {silhouette_avg:.2f}")
+
+        # Customize axes
+        ax.set_title(f"Silhouette Plot for k = {k}", fontsize=16)
+        ax.set_xlabel("Silhouette Coefficient", fontsize=12)
+        ax.set_ylabel("Cluster Label", fontsize=12)
+        ax.set_xlim([-0.1, 1.0])
+        ax.set_ylim([0, y_position])
+        ax.legend(loc="upper right")
+
+        # Display the plot
+        plt.show()
+
+    return avg_silhouette
+
+## Cluster Profiling
+def plot_cluster_profiling(df, cluster_labels, cluster_method_name, 
+                           figsize=(6, 8), cmap="BrBG", fmt=".2f"):
+    
+    # Concatenate the cluster labels with the original data
+    df_concat = pd.concat([df, pd.Series(cluster_labels, name='labels', index=df.index)], axis=1)
+    
+    # Group by cluster labels and compute the mean for each feature
+    cluster_profile = df_concat.groupby('labels').mean().T
+    
+    # Create the plot
+    fig, ax = plt.subplots(figsize=figsize)
+
+    # Plot the heatmap
+    sns.heatmap(cluster_profile, center=0, annot=True, cmap=cmap, fmt=fmt, ax=ax)
+
+    # Set labels and title
+    ax.set_xlabel("Cluster Labels")
+    ax.set_title(f"Cluster Profiling:\n{cluster_method_name} Clustering")
+    
+    # Show the plot
+    plt.show()
