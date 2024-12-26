@@ -307,7 +307,7 @@ def r2_clusters_hc(df:pd.DataFrame,
                 dist:str="euclidean"):
     """
     Calculates R-squared values for hierarchical clustering solutions using different
-    metrics to calculate distances. 
+    linkage methods to calculate distances. 
 
     ------------------------------------------
     Arguments:
