@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
 from sklearn.base import clone
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans, AgglomerativeClustering
 
 
 #################### Histograms ##############################
@@ -272,7 +272,7 @@ def calculate_r2(df:pd.DataFrame,
 
 def r2_clusters(df: pd.DataFrame, 
                 feats: list, 
-                clusterer: KMeans, 
+                clusterer, 
                 min_k: int = 2, 
                 max_k: int = 10) -> dict:
     """
@@ -280,11 +280,11 @@ def r2_clusters(df: pd.DataFrame,
 
     ------------------------------------------
     Arguments:
-     - df: The input DataFrame.
-     - feats: List of feature column names.
-     - clusterer: The sklearn clustering model (e.g., KMeans).
-     - min_k: Minimum number of clusters. Defaults to 2.
-     - max_k: Maximum number of clusters. Defaults to 10.
+     - df (pd.DataFrame): The input DataFrame.
+     - feats (list): List of feature column names.
+     - clusterer: The sklearn clustering model.
+     - min_k (int): Minimum number of clusters. Defaults to 2.
+     - max_k (int): Maximum number of clusters. Defaults to 10.
 
     ------------------------------------------
     Returns:
@@ -299,3 +299,43 @@ def r2_clusters(df: pd.DataFrame,
                               pd.Series(labels, name='labels', index=df.index)], axis=1) 
         r2_clust[n] = calculate_r2(df_concat, feats, 'labels')
     return r2_clust
+
+def r2_clusters_hc(df:pd.DataFrame,
+                link_method:str,
+                min_nclus:int =2,
+                max_nclus:int =10,
+                dist:str="euclidean"):
+    """
+    Calculates R-squared values for hierarchical clustering solutions using different
+    metrics to calculate distances. 
+
+    ------------------------------------------
+    Arguments:
+     - df (pd.DataFrame): Dataset to apply clustering.
+     - link_method (str): Linkage method for hierarchical clustering.
+     - min_nclus (int): Minimum number of clusters to evaluate. Defaults to 2.
+     - max_nclus (int): Maximum number of clusters to evaluate. Defaults to 10.
+     - dist (str): Distance metric for clustering. Defaults to "euclidean".
+
+    ------------------------------------------
+    Returns:
+     - ndarray: Array of R-squared values for the specified range of cluster numbers. 
+    """
+    
+    r2 = []  # where we will store the R2 metrics for each cluster solution
+    feats = df.columns.tolist()
+    
+    for i in range(min_nclus, max_nclus+1):  # iterate over desired ncluster range
+        cluster = AgglomerativeClustering(n_clusters=i, metric=dist, linkage=link_method)
+        
+        #get cluster labels
+        hclabels = cluster.fit_predict(df) 
+        
+        # concat df with labels
+        df_concat = pd.concat([df, pd.Series(hclabels, name='labels', index=df.index)], axis=1)  
+        
+        
+        # append the R2 of the given cluster solution
+        r2.append(calculate_r2(df_concat, feats, 'labels'))
+        
+    return np.array(r2)
