@@ -260,7 +260,7 @@ def calculate_r2(df:pd.DataFrame,
     overall_mean = df[feats].mean()
     group_means = df.groupby(label_col)[feats].mean()
     group_sizes = df.groupby(label_col)[feats].count()
-    ssb = np.sum(group_sizes * np.square(group_means - overall_mean).sum(axis=1))
+    ssb = np.sum(group_sizes * np.square(group_means - overall_mean)).sum(axis=0)
     sst = np.sum(df[feats].var() * (df[feats].count() - 1))
     return ssb / sst
 
