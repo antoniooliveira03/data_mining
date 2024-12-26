@@ -209,8 +209,14 @@ if selected == "About Us":
     
     for col, member in zip(cols, team_members):
         with col:
-            st.image(member["image"])  # Display the image
-            st.subheader(member["name"])  # Display the name
+            st.image(member["image"])  
+            st.subheader(member["name"]) 
             st.write(member["role"]) 
 
     st.divider()
+
+    st.markdown("""
+            Our team is dedicated to leveraging data science and business intelligence to deliver valuable insights and innovative solutions. 
+            Each team member brings a unique set of skills, from data engineering and analysis to project management and business strategy.
+            """)
+    
