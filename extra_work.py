@@ -50,9 +50,11 @@ if selected == "Home":
             st.write(f"**{role}**: {name} ({student_id})")
 
     # App description
-    st.markdown("""
-                App Description & App Logo
-                """)
+    st.subheader("ABCDEats Inc. Project")
+    st.write('Consumers today are becoming more selective about the businesses they support and where they spend their \
+             money. This makes it essential for companies to develop a deep understanding of their customer base in order \
+             to tailor their services and marketing strategies more effectively.')
+    st.divider()
     
 if selected == "Explore Data":
     st.title("Model Data and Insights")
@@ -86,7 +88,7 @@ if selected == "Explore Data":
         st.pyplot(hist)
 
         
-    interactive_hist(data)
+    interactive_hist (data)
 
     st.divider()
 
@@ -189,3 +191,26 @@ if selected == "Clustering":
         # Display the means with improved formatting for each chunk
         st.dataframe(chunk, use_container_width=True)
 
+
+if selected == "About Us":
+
+    st.title("Meet the Team")
+    
+    # Define team member details
+    team_members = [
+        {"name": "Ana B. Farinha", "role": "Data Scientist", "image": "./test.png"},
+        {"name": "António Oliveira", "role": "Data Engineer", "image": "./test.png"},
+        {"name": "Mariana XX Neto", "role": "Business Analyst", "image": "./test.png"},
+        {"name": "Salvador Domingues", "role": "Project Manager", "image": "./test.png"},
+    ]
+    
+    # Display team members in columns
+    cols = st.columns(len(team_members))
+    
+    for col, member in zip(cols, team_members):
+        with col:
+            st.image(member["image"])  # Display the image
+            st.subheader(member["name"])  # Display the name
+            st.write(member["role"]) 
+
+    st.divider()
