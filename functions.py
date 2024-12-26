@@ -265,7 +265,7 @@ def calculate_r2(df:pd.DataFrame,
     return ssb / sst
 
 
-def clust_diff_k(df: pd.DataFrame, 
+def r2_clusters(df: pd.DataFrame, 
                 feats: list, 
                 clusterer: KMeans, 
                 min_k: int = 2, 
