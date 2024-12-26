@@ -166,6 +166,22 @@ def cap_outliers(data):
             lambda x: lower_bound if x < lower_bound else (upper_bound if x > upper_bound else x)
         )
 
+def plot_distribution_and_boxplot(df, column_name, color='#568789'):
+    fig, axes = plt.subplots(1, 2, figsize=(14, 6))
+
+    sns.histplot(df[column_name], kde=True, bins=30, color=color, ax=axes[0])
+    axes[0].set_title(f"Distribution of {column_name}")
+    axes[0].set_xlabel(column_name)
+    axes[0].set_ylabel("Frequency")
+
+    sns.boxplot(x=df[column_name], color=color, ax=axes[1])
+    axes[1].set_title(f"Boxplot of {column_name}")
+    axes[1].set_xlabel(column_name)
+
+    plt.tight_layout()
+
+    plt.show()
+
 #################### Feature Engineering ##############################
 def avg_hour(row):
     """
