@@ -41,10 +41,10 @@ if selected == "Home":
     st.subheader("Project Team")
     with st.expander("Click to view team details"):
         team_members = {
-            "ROLE1": ("Ana B. Farinha", "XXXX"),
+            "ROLE1": ("Ana B. Farinha", "20211514"),
             "ROLE2": ("António Oliveira", "20240526"),
-            "ROLE3": ("Mariana Neto", "XXXX"),
-            "ROLE4": ("Salvador Domingues", "XXXXX"),
+            "ROLE3": ("Mariana Neto", "20211527"),
+            "ROLE4": ("Salvador Domingues", "20240597"),
         }
         for role, (name, student_id) in team_members.items():
             st.write(f"**{role}**: {name} ({student_id})")
