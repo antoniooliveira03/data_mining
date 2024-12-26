@@ -257,10 +257,15 @@ def calculate_r2(df:pd.DataFrame,
     Returns:
      - float: The R-squared value.
     """
+    # Mean of each feature
     overall_mean = df[feats].mean()
+    # Mean of each feature by cluster
     group_means = df.groupby(label_col)[feats].mean()
+    # Number of rows per cluster
     group_sizes = df.groupby(label_col)[feats].count()
+    # Calculate weighted sum of squares between clusters
     ssb = np.sum(group_sizes * np.square(group_means - overall_mean)).sum(axis=0)
+    # Calculate total sum of squares
     sst = np.sum(df[feats].var() * (df[feats].count() - 1))
     return ssb / sst
 
