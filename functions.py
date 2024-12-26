@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.cluster.hierarchy import dendrogram
+from sklearn.base import clone
+from sklearn.cluster import KMeans
 
 
 #################### Histograms ##############################
@@ -238,3 +240,57 @@ def plot_dim_reduction(embedding, targets = None,
 
     plt.show()
 
+
+def calculate_r2(df:pd.DataFrame,
+                feats:list,
+                label_col:str) -> float:
+    """
+    Calculate the R-squared value for a given DataFrame and features.
+
+    ------------------------------------------  
+    Arguments:
+     - df (pd.DataFrame): The input DataFrame.
+     - feats (list): List of feature column names.
+     - label_col (str): Name of the column containing labels.
+        
+    ------------------------------------------
+    Returns:
+     - float: The R-squared value.
+    """
+    overall_mean = df[feats].mean()
+    group_means = df.groupby(label_col)[feats].mean()
+    group_sizes = df.groupby(label_col)[feats].count()
+    ssb = np.sum(group_sizes * np.square(group_means - overall_mean).sum(axis=1))
+    sst = np.sum(df[feats].var() * (df[feats].count() - 1))
+    return ssb / sst
+
+
+def clust_diff_k(df: pd.DataFrame, 
+                feats: list, 
+                clusterer: KMeans, 
+                min_k: int = 2, 
+                max_k: int = 10) -> dict:
+    """
+    Loop over different values of k. To be used with sklearn clusters.
+
+    ------------------------------------------
+    Arguments:
+     - df: The input DataFrame.
+     - feats: List of feature column names.
+     - clusterer: The sklearn clustering model (e.g., KMeans).
+     - min_k: Minimum number of clusters. Defaults to 2.
+     - max_k: Maximum number of clusters. Defaults to 10.
+
+    ------------------------------------------
+    Returns:
+    - dict: A dictionary where keys are the number of clusters (k) 
+        and values are the corresponding R-squared scores.
+    """
+    r2_clust = {}
+    for n in range(min_k, max_k):
+        clust = clone(clusterer).set_params(n_clusters=n)
+        labels = clust.fit_predict(df)
+        df_concat = pd.concat([df, 
+                              pd.Series(labels, name='labels', index=df.index)], axis=1) 
+        r2_clust[n] = calculate_r2(df_concat, feats, 'labels')
+    return r2_clust
