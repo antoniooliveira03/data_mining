@@ -16,8 +16,8 @@ product_vendor = [
 
 spending_orders = [
     'total_orders', 'total_spend', 'avg_spend_prod',
-    'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE', 'promo_NO DISCOUNT',
-    'payment_method', 'pay_CARD', 'pay_CASH', 'pay_DIGI', 
+    'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
+    'payment_method', 'pay_CARD', 'pay_CASH', 
     'payment_method_enc', 'last_promo_enc',
     *['HR_' + str(i) for i in range(24)], 
     *['DOW_' + str(i) for i in range(7)], 
