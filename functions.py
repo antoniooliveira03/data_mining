@@ -483,3 +483,42 @@ def cluster_evaluation(df, feats, labels):
 
         
     return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
+
+def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
+    """
+    Create a clustering model (KMeans, Hierarchical, etc.), fit it to the data, and evaluate its performance.
+
+    Args:
+    - df: DataFrame containing the input data.
+    - feats: List of feature names for R² calculation.
+    - model_type: The type of clustering model to use ("kmeans", "hierarchical").
+    - n_clusters: Number of clusters for the model.
+    - **kwargs: Additional arguments to pass to the clustering model.
+
+    Returns:
+    - Dictionary with R², silhouette score, and Calinski-Harabasz index.
+    """
+
+    # Select and create the clustering model
+    if model_type == "kmeans":
+        model = KMeans(n_clusters=n_clusters, **kwargs)
+    elif model_type == "hierarchical":
+        model = AgglomerativeClustering(n_clusters=n_clusters, **kwargs)
+    else:
+        raise ValueError(f"Unsupported model_type: {model_type}. Use 'kmeans' or 'hierarchical'.")
+    
+    # Fit the model and get labels
+    labels = model.fit_predict(df)
+    
+    # Evaluate clustering performance
+    r2, silhouette, calinski_harabasz = cluster_evaluation(df, feats, labels, "labels")
+    
+    # Return results
+    return {
+        "Model": model_type,
+        "n_clusters": n_clusters,
+        **kwargs,  # Include any model-specific parameters
+        "R2": r2[0],
+        "Silhouette": silhouette[0],
+        "Calinski-Harabasz": calinski_harabasz[0]
+    }
