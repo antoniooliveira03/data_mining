@@ -350,8 +350,6 @@ def plot_cluster_profiling(df, cluster_labels, cluster_method_name,
 
 ## R2
 
-# Let's wrap them into functions
-
 def get_ss(df, feats):
     """
     Calculate the sum of squares (SS) for the given DataFrame.
