@@ -483,7 +483,6 @@ def cluster_evaluation(df, feats, labels):
     # append calinski_harabasz score
     calinski_harabasz.append(calinski_harabasz_score(df, labels))
 
-        
     return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
 
 def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
@@ -524,3 +523,48 @@ def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
         "Silhouette": silhouette[0],
         "Calinski-Harabasz": calinski_harabasz[0]
     }
+
+def plot_evaluation_scores(df):
+    """
+    Plots R², Silhouette, and Calinski-Harabasz scores for both KMeans and Hierarchical clustering models 
+    (with different linkage methods) in one plot for each score, across different numbers of clusters.
+    
+    Args:
+    - df: DataFrame containing clustering results with columns ['Model', 'n_clusters', 'linkage', 'R2', 'Silhouette', 'Calinski-Harabasz'].
+    """
+    # Create the plot
+    plt.figure(figsize=(14, 8))
+    
+    # Define the scores to plot
+    scores = ['R2', 'Silhouette', 'Calinski-Harabasz']
+    
+    # Iterate through each score
+    for idx, score_name in enumerate(scores):
+        plt.subplot(3, 1, idx+1)
+        
+        if 'kmeans' in df['Model'].values:
+            # Plot KMeans line for each score
+            kmeans_data = df[(df['Model'] == 'kmeans')]
+            kmeans_score = kmeans_data.groupby('n_clusters')[score_name].mean()
+            plt.plot(kmeans_score.index, kmeans_score.values, marker='o', label='KMeans', linewidth=2)
+
+        if 'hierarchical' in df['Model'].values:
+            # Plot Hierarchical lines for each linkage method
+            hierarchical_data = df[(df['Model'] == 'hierarchical')]
+            linkage_methods = hierarchical_data['linkage'].unique()
+            
+            for linkage in linkage_methods:
+                linkage_data = hierarchical_data[hierarchical_data['linkage'] == linkage]
+                linkage_score = linkage_data.groupby('n_clusters')[score_name].mean()
+                plt.plot(linkage_score.index, linkage_score.values, marker='o', label=f"{linkage} linkage", linewidth=2)
+
+        # Customize the plot
+        plt.title(f"{score_name} Score", fontsize=16)
+        plt.xlabel("Number of Clusters", fontsize=12)
+        plt.ylabel(f"{score_name} Score", fontsize=12)
+        plt.legend(title='Clustering Methods', fontsize=10)
+        plt.grid(True, alpha=0.3)
+    
+    # Adjust layout to prevent overlapping subplots
+    plt.tight_layout()
+    plt.show()
