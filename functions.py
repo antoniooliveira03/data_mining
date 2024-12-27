@@ -7,9 +7,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.cluster.hierarchy import dendrogram
 from sklearn.metrics import silhouette_score, silhouette_samples
+from sklearn.base import clone
 import matplotlib.cm as cm
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
+
 
 
 #################### Histograms ##############################
@@ -404,6 +406,7 @@ def get_rsq(df, feats, label_col):
     return (df_ssb_/df_sst_)
     
 def get_r2_hc(df, link_method, max_nclus, min_nclus=1, dist="euclidean"):
+
     r2 = []  # where we will store the R2 metrics for each cluster solution
     feats = df.columns.tolist()
     
@@ -419,5 +422,6 @@ def get_r2_hc(df, link_method, max_nclus, min_nclus=1, dist="euclidean"):
         
         # append the R2 of the given cluster solution
         r2.append(get_rsq(df_concat, feats, 'labels'))
+
         
     return np.array(r2)
