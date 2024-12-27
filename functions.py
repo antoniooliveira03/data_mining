@@ -479,7 +479,7 @@ def cluster_evaluation(df, feats, labels):
     # append silhouette score
     silhouette.append(silhouette_score(df, labels))
     # append calinski_harabasz score
-    calinski_harabasz = calinski_harabasz_score(df, labels)
+    calinski_harabasz.append(calinski_harabasz_score(df, labels))
 
         
     return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
