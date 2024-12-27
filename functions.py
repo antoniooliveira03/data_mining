@@ -255,7 +255,7 @@ def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average",
         for metric in metrics:
             # Perform AgglomerativeClustering with the current linkage and metric
             model = AgglomerativeClustering(
-                linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
+                random_state=42, linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
             ).fit(data)
             
             # Plot dendrogram on the corresponding subplot
@@ -311,7 +311,7 @@ def plot_silhouette(temp_data, possible_k):
     for k in possible_k:
 
         # Initialize and fit KMeans
-        kmclust = KMeans(n_clusters=k, init='k-means++', n_init=15, random_state=1)
+        kmclust = KMeans(n_clusters=k, init='k-means++', n_init=15, random_state=42)
         cluster_labels = kmclust.fit_predict(temp_data)
 
         # Compute silhouette scores
@@ -544,19 +544,18 @@ def plot_evaluation_scores(df):
         
         if 'kmeans' in df['Model'].values:
             # Plot KMeans line for each score
-            kmeans_data = df[(df['Model'] == 'kmeans')]
-            kmeans_score = kmeans_data.groupby('n_clusters')[score_name].mean()
-            plt.plot(kmeans_score.index, kmeans_score.values, marker='o', label='KMeans', linewidth=2)
+            kmeans_data = df[df['Model'] == 'kmeans']
+            plt.plot(kmeans_data.n_clusters, kmeans_data.score_name, marker='o', label='KMeans', linewidth=2)
 
         if 'hierarchical' in df['Model'].values:
             # Plot Hierarchical lines for each linkage method
-            hierarchical_data = df[(df['Model'] == 'hierarchical')]
-            linkage_methods = hierarchical_data['linkage'].unique()
+            hierarchical_data = df[df['Model'] == 'hierarchical']
+            combinations_df= hierarchical_data.drop_duplicates(subset=['Model', 'linkage'])
+            combinations_df['metric'] = combinations_df['metric'].fillna('euclidean')
+            combinations_df = combinations_df[['Model', 'linkage', 'metric']] 
             
-            for linkage in linkage_methods:
-                linkage_data = hierarchical_data[hierarchical_data['linkage'] == linkage]
-                linkage_score = linkage_data.groupby('n_clusters')[score_name].mean()
-                plt.plot(linkage_score.index, linkage_score.values, marker='o', label=f"{linkage} linkage", linewidth=2)
+            for i in range(len(combinations_df)):
+                plt.plot(hierarchical_data.n_clusters, hierarchical_data.values, marker='o', label=f"{hierarchical_data.linkage} linkage & {hierarchical_data.metric} metric", linewidth=2)
 
         # Customize the plot
         plt.title(f"{score_name} Score", fontsize=16)
