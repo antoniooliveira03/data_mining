@@ -198,10 +198,10 @@ if selected == "About Us":
     
     # Define team member details
     team_members = [
-        {"name": "Ana B. Farinha", "role": "Data Scientist", "image": "./test.png"},
-        {"name": "António Oliveira", "role": "Data Engineer", "image": "./test.png"},
-        {"name": "Mariana XX Neto", "role": "Business Analyst", "image": "./test.png"},
-        {"name": "Salvador Domingues", "role": "Project Manager", "image": "./test.png"},
+        {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./test.png"},
+        {"name": "António Oliveira", "role": "Project Manager", "image": "./test.png"},
+        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./test.png"},
+        {"name": "Salvador Domingues", "role": "Data Scientist", "image": "./test.png"},
     ]
     
     # Display team members in columns
