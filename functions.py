@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.cluster.hierarchy import dendrogram
-from sklearn.metrics import silhouette_score, silhouette_samples
+from sklearn.metrics import silhouette_score, silhouette_samples, calinski_harabasz_score
 from sklearn.base import clone
 import matplotlib.cm as cm
 from sklearn.cluster import KMeans
@@ -229,32 +229,42 @@ def plot_dendrogram(model, **kwargs):
     # Plot the dendrogram
     dendrogram(linkage_matrix, **kwargs)
 
-def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average", "single"], metric='euclidean'):
+def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average", "single"], metrics=['euclidean']):
     """
-    Create and display a 2x2 grid of hierarchical clustering dendrograms for the given data.
-    
+    Create and display a grid of hierarchical clustering dendrograms for the given data,
+    enumerating different linkage and metric combinations.
+
     Args:
-    - data: The dataset to cluster, should be a NumPy array or a pandas DataFrame (scaled).
+    - data: The dataset to cluster, should be a NumPy array or a pandas DataFrame.
     - linkages: List of linkage methods to evaluate (default is ['ward', 'complete', 'average', 'single']).
-    - metric: The distance metric to use for the AgglomerativeClustering (default is 'euclidean').
+    - metrics: List of distance metrics to use for the AgglomerativeClustering (default is ['euclidean']).
     """
-    # Create a 2x2 plot grid for all linkage combinations
-    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+    # Number of subplots we need for combinations of linkages and metrics
+    num_plots = len(linkages) * len(metrics)
+
+    # Create a plot grid based on the number of combinations
+    num_rows = (num_plots + 1) // 2  # Adjust grid size to fit all combinations
+    fig, axes = plt.subplots(num_rows, 2, figsize=(14, 6 * num_rows))
     axes = axes.ravel()  # Flatten the axes array for easy access
 
-    # Loop over each linkage method to create a dendrogram for each one
-    for plot_idx, linkage in enumerate(linkages):
-        # Perform AgglomerativeClustering with the current linkage
-        model = AgglomerativeClustering(
-            linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
-        ).fit(data)
-        
-        # Plot dendrogram on the corresponding subplot
-        ax = axes[plot_idx]  # Get the corresponding axis
-        ax.set_title(f"Hierarchical Clustering with {linkage} Linkage")
-        
-        # Plot the dendrogram
-        plot_dendrogram(model, ax=ax, truncate_mode="level", p=10)
+    # Loop through both linkage and metric combinations
+    plot_idx = 0
+    for linkage in linkages:
+        for metric in metrics:
+            # Perform AgglomerativeClustering with the current linkage and metric
+            model = AgglomerativeClustering(
+                linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
+            ).fit(data)
+            
+            # Plot dendrogram on the corresponding subplot
+            ax = axes[plot_idx]  # Get the corresponding axis
+            ax.set_title(f"Linkage: {linkage} - Metric: {metric}")
+            
+            # Plot the dendrogram
+            plot_dendrogram(model, ax=ax, truncate_mode="level", p=10)
+
+            # Increment the subplot index
+            plot_idx += 1
 
     # Adjust layout for better visibility
     plt.tight_layout()
@@ -455,26 +465,21 @@ def get_r2_hc(df, link_method, max_nclus, min_nclus=1, dist="euclidean"):
         
     return np.array(r2)
 
-def evaluate_hc(df, link_method, max_nclus=8, min_nclus=2, dist="euclidean"):
+def cluster_evaluation(df, feats, labels):
 
     r2 = []  # where we will store the R2 metrics for each cluster solution
     silhouette = []
-    feats = df.columns.tolist()
-    
-    for i in range(min_nclus, max_nclus+1):  # iterate over desired ncluster range
-        cluster = AgglomerativeClustering(n_clusters=i, metric=dist, linkage=link_method)
-        
-        #get cluster labels
-        hclabels = cluster.fit_predict(df) 
-        
-        # concat df with labels
-        df_concat = pd.concat([df, pd.Series(hclabels, name='labels', index=df.index)], axis=1)  
-        
-        
-        # append the R2 of the given cluster solution
-        r2.append(get_rsq(df_concat, feats, 'labels'))
-        # append silhouette score
-        silhouette.append(silhouette_score(df, hclabels))
+    calinski_harabasz = []
+
+    # concat df with labels
+    df_concat = pd.concat([df, pd.Series(labels, name='labels', index=df.index)], axis=1)   
+
+    # append the R2 of the given cluster solution
+    r2.append(get_rsq(df_concat, feats, 'labels'))
+    # append silhouette score
+    silhouette.append(silhouette_score(df, labels))
+    # append calinski_harabasz score
+    calinski_harabasz = calinski_harabasz_score(df, labels)
 
         
-    return np.array(r2), np.array(silhouette)
+    return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
