@@ -511,7 +511,7 @@ def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
     labels = model.fit_predict(df)
     
     # Evaluate clustering performance
-    r2, silhouette, calinski_harabasz = cluster_evaluation(df, feats, labels, "labels")
+    r2, silhouette, calinski_harabasz = cluster_evaluation(df, feats, labels)
     
     # Return results
     return {
