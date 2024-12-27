@@ -13,6 +13,8 @@ from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 
 
+main_color= '#568789'
+
 
 #################### Histograms ##############################
 
@@ -168,7 +170,7 @@ def cap_outliers(data):
             lambda x: lower_bound if x < lower_bound else (upper_bound if x > upper_bound else x)
         )
 
-def plot_distribution_and_boxplot(df, column_name, color='#568789'):
+def plot_distribution_and_boxplot(df, column_name, color=main_color):
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
     sns.histplot(df[column_name], kde=True, bins=30, color=color, ax=axes[0])
