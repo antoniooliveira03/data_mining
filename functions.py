@@ -6,12 +6,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy.cluster.hierarchy import dendrogram
-from sklearn.metrics import silhouette_score, silhouette_samples
+from sklearn.metrics import silhouette_score, silhouette_samples, calinski_harabasz_score
 from sklearn.base import clone
 import matplotlib.cm as cm
 from sklearn.cluster import KMeans
 from sklearn.cluster import AgglomerativeClustering
 
+
+main_color= '#568789'
 
 
 #################### Histograms ##############################
@@ -168,7 +170,7 @@ def cap_outliers(data):
             lambda x: lower_bound if x < lower_bound else (upper_bound if x > upper_bound else x)
         )
 
-def plot_distribution_and_boxplot(df, column_name, color='#568789'):
+def plot_distribution_and_boxplot(df, column_name, color=main_color):
     fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
     sns.histplot(df[column_name], kde=True, bins=30, color=color, ax=axes[0])
@@ -229,32 +231,42 @@ def plot_dendrogram(model, **kwargs):
     # Plot the dendrogram
     dendrogram(linkage_matrix, **kwargs)
 
-def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average", "single"], metric='euclidean'):
+def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average", "single"], metrics=['euclidean']):
     """
-    Create and display a 2x2 grid of hierarchical clustering dendrograms for the given data.
-    
+    Create and display a grid of hierarchical clustering dendrograms for the given data,
+    enumerating different linkage and metric combinations.
+
     Args:
-    - data: The dataset to cluster, should be a NumPy array or a pandas DataFrame (scaled).
+    - data: The dataset to cluster, should be a NumPy array or a pandas DataFrame.
     - linkages: List of linkage methods to evaluate (default is ['ward', 'complete', 'average', 'single']).
-    - metric: The distance metric to use for the AgglomerativeClustering (default is 'euclidean').
+    - metrics: List of distance metrics to use for the AgglomerativeClustering (default is ['euclidean']).
     """
-    # Create a 2x2 plot grid for all linkage combinations
-    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+    # Number of subplots we need for combinations of linkages and metrics
+    num_plots = len(linkages) * len(metrics)
+
+    # Create a plot grid based on the number of combinations
+    num_rows = (num_plots + 1) // 2  # Adjust grid size to fit all combinations
+    fig, axes = plt.subplots(num_rows, 2, figsize=(14, 6 * num_rows))
     axes = axes.ravel()  # Flatten the axes array for easy access
 
-    # Loop over each linkage method to create a dendrogram for each one
-    for plot_idx, linkage in enumerate(linkages):
-        # Perform AgglomerativeClustering with the current linkage
-        model = AgglomerativeClustering(
-            linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
-        ).fit(data)
-        
-        # Plot dendrogram on the corresponding subplot
-        ax = axes[plot_idx]  # Get the corresponding axis
-        ax.set_title(f"Hierarchical Clustering with {linkage} Linkage")
-        
-        # Plot the dendrogram
-        plot_dendrogram(model, ax=ax, truncate_mode="level", p=10)
+    # Loop through both linkage and metric combinations
+    plot_idx = 0
+    for linkage in linkages:
+        for metric in metrics:
+            # Perform AgglomerativeClustering with the current linkage and metric
+            model = AgglomerativeClustering(
+                random_state=42, linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
+            ).fit(data)
+            
+            # Plot dendrogram on the corresponding subplot
+            ax = axes[plot_idx]  # Get the corresponding axis
+            ax.set_title(f"Linkage: {linkage} - Metric: {metric}")
+            
+            # Plot the dendrogram
+            plot_dendrogram(model, ax=ax, truncate_mode="level", p=10)
+
+            # Increment the subplot index
+            plot_idx += 1
 
     # Adjust layout for better visibility
     plt.tight_layout()
@@ -299,7 +311,7 @@ def plot_silhouette(temp_data, possible_k):
     for k in possible_k:
 
         # Initialize and fit KMeans
-        kmclust = KMeans(n_clusters=k, init='k-means++', n_init=15, random_state=1)
+        kmclust = KMeans(n_clusters=k, init='k-means++', n_init=15, random_state=42)
         cluster_labels = kmclust.fit_predict(temp_data)
 
         # Compute silhouette scores
@@ -455,26 +467,139 @@ def get_r2_hc(df, link_method, max_nclus, min_nclus=1, dist="euclidean"):
         
     return np.array(r2)
 
-def evaluate_hc(df, link_method, max_nclus=8, min_nclus=2, dist="euclidean"):
+def cluster_evaluation(df, feats, labels):
 
     r2 = []  # where we will store the R2 metrics for each cluster solution
     silhouette = []
-    feats = df.columns.tolist()
-    
-    for i in range(min_nclus, max_nclus+1):  # iterate over desired ncluster range
-        cluster = AgglomerativeClustering(n_clusters=i, metric=dist, linkage=link_method)
-        
-        #get cluster labels
-        hclabels = cluster.fit_predict(df) 
-        
-        # concat df with labels
-        df_concat = pd.concat([df, pd.Series(hclabels, name='labels', index=df.index)], axis=1)  
-        
-        
-        # append the R2 of the given cluster solution
-        r2.append(get_rsq(df_concat, feats, 'labels'))
-        # append silhouette score
-        silhouette.append(silhouette_score(df, hclabels))
+    calinski_harabasz = []
 
+    # concat df with labels
+    df_concat = pd.concat([df, pd.Series(labels, name='labels', index=df.index)], axis=1)   
+
+    # append the R2 of the given cluster solution
+    r2.append(get_rsq(df_concat, feats, 'labels'))
+    # append silhouette score
+    silhouette.append(silhouette_score(df, labels))
+    # append calinski_harabasz score
+    calinski_harabasz.append(calinski_harabasz_score(df, labels))
+
+    return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
+
+def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
+    """
+    Create a clustering model (KMeans, Hierarchical, etc.), fit it to the data, and evaluate its performance.
+
+    Args:
+    - df: DataFrame containing the input data.
+    - feats: List of feature names for R² calculation.
+    - model_type: The type of clustering model to use ("kmeans", "hierarchical").
+    - n_clusters: Number of clusters for the model.
+    - **kwargs: Additional arguments to pass to the clustering model.
+
+    Returns:
+    - Dictionary with R², silhouette score, and Calinski-Harabasz index.
+    """
+
+    # Select and create the clustering model
+    if model_type == "kmeans":
+        model = KMeans(n_clusters=n_clusters, **kwargs)
+    elif model_type == "hierarchical":
+        model = AgglomerativeClustering(n_clusters=n_clusters, **kwargs)
+    else:
+        raise ValueError(f"Unsupported model_type: {model_type}. Use 'kmeans' or 'hierarchical'.")
+    
+    # Fit the model and get labels
+    labels = model.fit_predict(df)
+    
+    # Evaluate clustering performance
+    r2, silhouette, calinski_harabasz = cluster_evaluation(df, feats, labels)
+    
+    # Return results
+    return {
+        "Model": model_type,
+        "n_clusters": n_clusters,
+        **kwargs,  # Include any model-specific parameters
+        "R2": r2[0],
+        "Silhouette": silhouette[0],
+        "Calinski-Harabasz": calinski_harabasz[0]
+    }
+
+def plot_evaluation_scores(df):
+    """
+    Plots R², Silhouette, and Calinski-Harabasz scores for both KMeans and Hierarchical clustering models 
+    (with different linkage methods) in one plot for each score, across different numbers of clusters.
+    
+    Args:
+    - df: DataFrame containing clustering results with columns 
+           ['Model', 'n_clusters', 'linkage', 'metric', 'R2', 'Silhouette', 'Calinski-Harabasz'].
+    """
+    # Create the plot
+    plt.figure(figsize=(14, 8))
+    
+    # Define the scores to plot
+    scores = ['R2', 'Silhouette', 'Calinski-Harabasz']
+    
+    # Initialize a set for storing unique legend labels
+    legend_handles = []
+    
+    # Iterate through each score
+    for idx, score_name in enumerate(scores):
+        plt.subplot(3, 1, idx+1)
+
+        # Plot KMeans scores if available
+        if 'kmeans' in df['Model'].values:
+            kmeans_data = df[df['Model'] == 'kmeans']
+            line, = plt.plot(
+                kmeans_data['n_clusters'], 
+                kmeans_data[score_name], 
+                marker='o', 
+                label='KMeans', 
+                linewidth=2
+            )
+            if idx == 0:
+                legend_handles.append(line)  # Add to legend once
         
-    return np.array(r2), np.array(silhouette)
+        # Plot Hierarchical clustering scores for each linkage method
+        if 'hierarchical' in df['Model'].values:
+            df['metric'] = df['metric'].fillna('euclidean')
+            hierarchical_data = df[df['Model'] == 'hierarchical']
+            unique_linkages = hierarchical_data[['linkage', 'metric']].drop_duplicates()
+            
+            for _, row in unique_linkages.iterrows():
+                linkage = row['linkage']
+                metric = row['metric']
+                
+                subset = hierarchical_data[
+                    (hierarchical_data['linkage'] == linkage) &
+                    (hierarchical_data['metric'] == metric)
+                ]
+                line, = plt.plot(
+                    subset['n_clusters'], 
+                    subset[score_name], 
+                    marker='o', 
+                    label=f"{linkage.capitalize()} (Metric: {metric})", 
+                    linewidth=2
+                )
+                if idx == 0:
+                    legend_handles.append(line)  # Add to legend once
+
+        # Customize the plot
+        plt.title(f"{score_name} Score", fontsize=16)
+        plt.xlabel("Number of Clusters", fontsize=12)
+        plt.ylabel(f"{score_name} Score", fontsize=12)
+        plt.grid(True, alpha=0.3)
+        plt.xticks(range(int(min(df['n_clusters'])), int(max(df['n_clusters'])) + 1))
+    
+    # Add a single legend for all subplots, located outside the last subplot
+    plt.legend(
+        handles=legend_handles, 
+        title='Clustering Methods', 
+        fontsize=10, 
+        loc='upper center', 
+        bbox_to_anchor=(0.5, -0.05), 
+        ncol=2  # Arrange in 2 columns if there are many methods
+    )
+
+    # Adjust layout to prevent overlapping subplots
+    plt.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space at the bottom for the legend
+    plt.show()
