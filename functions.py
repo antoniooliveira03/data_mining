@@ -229,6 +229,37 @@ def plot_dendrogram(model, **kwargs):
     # Plot the dendrogram
     dendrogram(linkage_matrix, **kwargs)
 
+def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average", "single"], metric='euclidean'):
+    """
+    Create and display a 2x2 grid of hierarchical clustering dendrograms for the given data.
+    
+    Args:
+    - data: The dataset to cluster, should be a NumPy array or a pandas DataFrame (scaled).
+    - linkages: List of linkage methods to evaluate (default is ['ward', 'complete', 'average', 'single']).
+    - metric: The distance metric to use for the AgglomerativeClustering (default is 'euclidean').
+    """
+    # Create a 2x2 plot grid for all linkage combinations
+    fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+    axes = axes.ravel()  # Flatten the axes array for easy access
+
+    # Loop over each linkage method to create a dendrogram for each one
+    for plot_idx, linkage in enumerate(linkages):
+        # Perform AgglomerativeClustering with the current linkage
+        model = AgglomerativeClustering(
+            linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
+        ).fit(data)
+        
+        # Plot dendrogram on the corresponding subplot
+        ax = axes[plot_idx]  # Get the corresponding axis
+        ax.set_title(f"Hierarchical Clustering with {linkage} Linkage")
+        
+        # Plot the dendrogram
+        plot_dendrogram(model, ax=ax, truncate_mode="level", p=10)
+
+    # Adjust layout for better visibility
+    plt.tight_layout()
+    plt.show()
+
 def plot_dim_reduction(embedding, targets = None, 
                        technique = 'UMAP',
                        figsize = (10, 7)):
@@ -423,3 +454,27 @@ def get_r2_hc(df, link_method, max_nclus, min_nclus=1, dist="euclidean"):
 
         
     return np.array(r2)
+
+def evaluate_hc(df, link_method, max_nclus=8, min_nclus=2, dist="euclidean"):
+
+    r2 = []  # where we will store the R2 metrics for each cluster solution
+    silhouette = []
+    feats = df.columns.tolist()
+    
+    for i in range(min_nclus, max_nclus+1):  # iterate over desired ncluster range
+        cluster = AgglomerativeClustering(n_clusters=i, metric=dist, linkage=link_method)
+        
+        #get cluster labels
+        hclabels = cluster.fit_predict(df) 
+        
+        # concat df with labels
+        df_concat = pd.concat([df, pd.Series(hclabels, name='labels', index=df.index)], axis=1)  
+        
+        
+        # append the R2 of the given cluster solution
+        r2.append(get_rsq(df_concat, feats, 'labels'))
+        # append silhouette score
+        silhouette.append(silhouette_score(df, hclabels))
+
+        
+    return np.array(r2), np.array(silhouette)
