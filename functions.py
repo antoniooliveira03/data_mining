@@ -231,13 +231,14 @@ def plot_dendrogram(model, **kwargs):
     # Plot the dendrogram
     dendrogram(linkage_matrix, **kwargs)
 
-def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average", "single"], metrics=['euclidean']):
+def plot_hierarchical_dendrograms(data, path=None, linkages=["ward", "complete", "average", "single"], metrics=['euclidean']):
     """
     Create and display a grid of hierarchical clustering dendrograms for the given data,
     enumerating different linkage and metric combinations.
 
     Args:
     - data: The dataset to cluster, should be a NumPy array or a pandas DataFrame.
+    - path: defines where the image will be saved.
     - linkages: List of linkage methods to evaluate (default is ['ward', 'complete', 'average', 'single']).
     - metrics: List of distance metrics to use for the AgglomerativeClustering (default is ['euclidean']).
     """
@@ -271,6 +272,8 @@ def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average",
     # Adjust layout for better visibility
     plt.tight_layout()
     plt.show()
+    if path != None:
+        plt.savefig(f'{path}_dendrogram.png')
 
 def plot_dim_reduction(embedding, targets = None, 
                        technique = 'UMAP',
@@ -524,7 +527,7 @@ def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
         "Calinski-Harabasz": calinski_harabasz[0]
     }
 
-def plot_evaluation_scores(df):
+def plot_evaluation_scores(df, path=None):
     """
     Plots R², Silhouette, and Calinski-Harabasz scores for both KMeans and Hierarchical clustering models 
     (with different linkage methods) in one plot for each score, across different numbers of clusters.
@@ -603,3 +606,5 @@ def plot_evaluation_scores(df):
     # Adjust layout to prevent overlapping subplots
     plt.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space at the bottom for the legend
     plt.show()
+    if path != None:
+        plt.savefig(f'{path}_scores.png')
