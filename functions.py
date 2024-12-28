@@ -271,9 +271,10 @@ def plot_hierarchical_dendrograms(data, path=None, linkages=["ward", "complete",
 
     # Adjust layout for better visibility
     plt.tight_layout()
-    plt.show()
     if path != None:
         plt.savefig(f'{path}_dendrogram.png')
+    plt.show()
+
 
 def plot_dim_reduction(embedding, targets = None, 
                        technique = 'UMAP',
@@ -605,6 +606,7 @@ def plot_evaluation_scores(df, path=None):
 
     # Adjust layout to prevent overlapping subplots
     plt.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space at the bottom for the legend
-    plt.show()
     if path != None:
         plt.savefig(f'{path}_scores.png')
+    plt.show()
+    
