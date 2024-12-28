@@ -255,7 +255,7 @@ def plot_hierarchical_dendrograms(data, linkages=["ward", "complete", "average",
         for metric in metrics:
             # Perform AgglomerativeClustering with the current linkage and metric
             model = AgglomerativeClustering(
-                random_state=42, linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
+                linkage=linkage, distance_threshold=0, n_clusters=None, metric=metric
             ).fit(data)
             
             # Plot dendrogram on the corresponding subplot
