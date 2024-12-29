@@ -41,10 +41,10 @@ if selected == "Home":
     st.subheader("Project Team")
     with st.expander("Click to view team details"):
         team_members = {
-            "ROLE1": ("Ana B. Farinha", "20211514"),
-            "ROLE2": ("António Oliveira", "20240526"),
-            "ROLE3": ("Mariana Neto", "20211527"),
-            "ROLE4": ("Salvador Domingues", "20240597"),
+            "Data Engineer": ("Ana B. Farinha", "20211514"),
+            "Project Manager": ("António Oliveira", "20240526"),
+            "Business Analyst": ("Mariana Neto", "20211527"),
+            "Data Scientist": ("Salvador Domingues", "20240597"),
         }
         for role, (name, student_id) in team_members.items():
             st.write(f"**{role}**: {name} ({student_id})")
@@ -195,13 +195,32 @@ if selected == "Clustering":
 if selected == "About Us":
 
     st.title("Meet the Team")
+
+    st.markdown("<br>", unsafe_allow_html=True)
     
     # Define team member details
     team_members = [
-        {"name": "Ana B. Farinha", "role": "Data Scientist", "image": "./test.png"},
-        {"name": "António Oliveira", "role": "Data Engineer", "image": "./test.png"},
-        {"name": "Mariana XX Neto", "role": "Business Analyst", "image": "./test.png"},
-        {"name": "Salvador Domingues", "role": "Project Manager", "image": "./test.png"},
+        {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./fotos/ab.jpeg", 'academic_background': f'Bsc in Data Science @ Nova IMS;\n\n Msc in Data Science & Advance Analytics @ Nova IMS'},
+        {"name": "António Oliveira", "role": "Project Manager", "image": "./fotos/ant.jpg", 'academic_background': """
+        
+        📞 +351 916 013 580 | 📧 tzpoliveira@gmail.com | [LinkedIn](#)  
+         
+        - **Education**
+          - MSc in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
+          - BSc in Data Science (2021-2024) @ Nova IMS
+          - Erasmus @ University of Mannheim (2024).
+
+        - **Experience**: 
+          - **Summer Intern** @ NTT Data (2024)
+          - **Football Referee** (2022-present)
+
+        - **Extracurriculars**:  
+          - Marketing at Nova Formula Student.  
+          - Events at Nova IMS Debate Club.  
+          - Volunteering since 2016 (CASA, WebSummit).
+        """},
+        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg"},
+        {"name": "Salvador Domingues", "role": "Data Scientist", "image": "./fotos/salvador.jpg"},
     ]
     
     # Display team members in columns
@@ -215,8 +234,16 @@ if selected == "About Us":
 
     st.divider()
 
-    st.markdown("""
-            Our team is dedicated to leveraging data science and business intelligence to deliver valuable insights and innovative solutions. 
-            Each team member brings a unique set of skills, from data engineering and analysis to project management and business strategy.
-            """)
-    
+    # Now add the second section for background information
+    st.subheader("Academic Background of Our Team")
+
+    # Create two columns: one for image and name, another for background info
+    for member in team_members:
+        cols = st.columns([1, 3])  
+        
+        with cols[0]:  
+            st.image(member["image"], width=150)
+            st.subheader(member["name"])
+
+        with cols[1]: 
+            st.write(member["academic_background"])
