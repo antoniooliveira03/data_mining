@@ -9,8 +9,8 @@ from scipy.cluster.hierarchy import dendrogram
 from sklearn.metrics import silhouette_score, silhouette_samples, calinski_harabasz_score
 from sklearn.base import clone
 import matplotlib.cm as cm
-from sklearn.cluster import KMeans
-from sklearn.cluster import AgglomerativeClustering
+from sklearn.cluster import KMeans, AgglomerativeClustering, MeanShift, DBSCAN
+from hdbscan import HDBSCAN
 
 
 main_color= '#568789'
@@ -371,6 +371,29 @@ def plot_silhouette(temp_data, possible_k):
 
     return avg_silhouette
 
+
+def plot_cluster_counts(data, cluster_column, color="#568789"):
+
+    # Calculate the number of observations in each cluster
+    cluster_counts = data.groupby([cluster_column]).size()
+    
+    # Create the bar plot
+    ax = cluster_counts.plot(kind="bar", color=color, figsize=(8, 5))
+    
+    # Add labels to the x and y axes
+    plt.xlabel("Cluster", fontsize=12)
+    plt.ylabel("Number of Observations", fontsize=12)
+    plt.xticks(rotation=0)
+    plt.title("Cluster Distribution", fontsize=14)
+
+    # Add the number of observations on top of each bar
+    for idx, value in enumerate(cluster_counts):
+        ax.text(idx, value + 0.5, str(value), ha="center", fontsize=10)
+    
+    # Show the plot
+    plt.tight_layout()
+    plt.show()
+
 ## Cluster Profiling
 def plot_cluster_profiling(df, cluster_labels, cluster_method_name, 
                            figsize=(6, 8), cmap="BrBG", fmt=".2f"):
@@ -488,15 +511,14 @@ def cluster_evaluation(df, feats, labels):
 
     return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
 
-def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
+def create_and_evaluate_model(df, feats, model_type, **kwargs):
     """
     Create a clustering model (KMeans, Hierarchical, etc.), fit it to the data, and evaluate its performance.
 
     Args:
     - df: DataFrame containing the input data.
     - feats: List of feature names for R² calculation.
-    - model_type: The type of clustering model to use ("kmeans", "hierarchical").
-    - n_clusters: Number of clusters for the model.
+    - model_type: The type of clustering model to use ("kmeans", "hierarchical", "dbscan", "hdbscan", "meanshift").
     - **kwargs: Additional arguments to pass to the clustering model.
 
     Returns:
@@ -505,9 +527,15 @@ def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
 
     # Select and create the clustering model
     if model_type == "kmeans":
-        model = KMeans(n_clusters=n_clusters, **kwargs)
+        model = KMeans(**kwargs)
     elif model_type == "hierarchical":
-        model = AgglomerativeClustering(n_clusters=n_clusters, **kwargs)
+        model = AgglomerativeClustering(**kwargs)
+    elif model_type == 'dbscan':
+        model = DBSCAN(**kwargs)
+    elif model_type == 'hdbscan':
+        model = HDBSCAN(**kwargs)
+    elif model_type == 'meanshift':
+        model = MeanShift(**kwargs)
     else:
         raise ValueError(f"Unsupported model_type: {model_type}. Use 'kmeans' or 'hierarchical'.")
     
@@ -520,7 +548,6 @@ def create_and_evaluate_model(df, feats, model_type, n_clusters=3, **kwargs):
     # Return results
     return {
         "Model": model_type,
-        "n_clusters": n_clusters,
         **kwargs,  # Include any model-specific parameters
         "R2": r2[0],
         "Silhouette": silhouette[0],
@@ -585,13 +612,74 @@ def plot_evaluation_scores(df, path=None):
                 )
                 if idx == 0:
                     legend_handles.append(line)  # Add to legend once
+                 
+       # Plot DBSCAN scores if available
+        if 'dbscan' in df['Model'].values:
+            dbscan_data = df[df['Model'] == 'dbscan']
+
+            # Sort by eps so the line connects the dots in the correct order
+            dbscan_data_sorted = dbscan_data.sort_values(by='eps')
+
+            # Plot all algorithms in the same plot, connecting the dots with a line
+            unique_algorithm = dbscan_data['algorithm'].drop_duplicates()
+            
+            line_styles = {'ball_tree': '-',
+                           'kd_tree': '--',
+                           'brute': ':'}
+
+            for algorithm in unique_algorithm:
+                subset = dbscan_data_sorted[dbscan_data_sorted['algorithm'] == algorithm]
+                
+                linestyle = line_styles.get(algorithm, '-')
+
+                # Plot the line for the current algorithm
+                line, = plt.plot(
+                    subset['eps'],  
+                    subset[score_name], 
+                    marker='o', 
+                    linestyle=linestyle,  
+                    label=f"DBSCAN (Algorithm: {algorithm})", 
+                    linewidth=2
+                )
+                if idx == 0:
+                    legend_handles.append(line)  # Add to legend once
+
+
+        # Plot HDBSCAN scores if available
+        if 'hdbscan' in df['Model'].values:
+            hdbscan_data = df[df['Model'] == 'hdbscan']
+            unique_min_cluster_sizes = hdbscan_data['min_cluster_size'].drop_duplicates()
+            unique_methods = hdbscan_data['cluster_selection_method'].drop_duplicates()
+
+            for method in unique_methods:
+                subset = hdbscan_data[hdbscan_data['cluster_selection_method'] == method]
+                line, = plt.plot(
+                    subset['min_cluster_size'],  
+                    subset[score_name], 
+                    marker='o', 
+                    linestyle='-',  
+                    label=f"HDBSCAN (Method: {method})", 
+                    linewidth=2
+                )
+                if idx == 0:
+                    legend_handles.append(line)  # Add to legend once
+                
 
         # Customize the plot
         plt.title(f"{score_name} Score", fontsize=16)
-        plt.xlabel("Number of Clusters", fontsize=12)
         plt.ylabel(f"{score_name} Score", fontsize=12)
         plt.grid(True, alpha=0.3)
-        plt.xticks(range(int(min(df['n_clusters'])), int(max(df['n_clusters'])) + 1))
+        
+        # Adjust x-ticks for different models
+        if 'hdbscan' in df['Model'].values:
+            plt.xticks(sorted(df['min_cluster_size'].unique())) 
+            plt.xlabel("Minimum Cluster Size", fontsize=12)
+        elif 'dbscan' in df['Model'].values:
+            plt.xticks(sorted(df['eps'].unique()))
+            plt.xlabel("Epsilon", fontsize=12)
+        else:
+            plt.xticks(range(int(min(df['n_clusters'])), int(max(df['n_clusters'])) + 1))
+            plt.xlabel("Number of Clusters", fontsize=12)
     
     # Add a single legend for all subplots, located outside the last subplot
     plt.legend(
