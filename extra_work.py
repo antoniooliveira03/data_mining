@@ -201,7 +201,24 @@ if selected == "About Us":
     # Define team member details
     team_members = [
         {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./fotos/ab.jpeg", 'academic_background': f'Bsc in Data Science @ Nova IMS;\n\n Msc in Data Science & Advance Analytics @ Nova IMS'},
-        {"name": "António Oliveira", "role": "Project Manager", "image": "./fotos/ant.jpg"},
+        {"name": "António Oliveira", "role": "Project Manager", "image": "./fotos/ant.jpg", 'academic_background': """
+        
+        📞 +351 916 013 580 | 📧 tzpoliveira@gmail.com | [LinkedIn](#)  
+         
+        - **Education**
+          - MSc in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
+          - BSc in Data Science (2021-2024) @ Nova IMS
+          - Erasmus @ University of Mannheim (2024).
+
+        - **Experience**: 
+          - **Summer Intern** @ NTT Data (2024)
+          - **Football Referee** (2022-present)
+
+        - **Extracurriculars**:  
+          - Marketing at Nova Formula Student.  
+          - Events at Nova IMS Debate Club.  
+          - Volunteering since 2016 (CASA, WebSummit).
+        """},
         {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg"},
         {"name": "Salvador Domingues", "role": "Data Scientist", "image": "./fotos/salvador.jpg"},
     ]
@@ -222,11 +239,11 @@ if selected == "About Us":
 
     # Create two columns: one for image and name, another for background info
     for member in team_members:
-        cols = st.columns(4)  # Create two columns
+        cols = st.columns([1, 3])  
         
-        with cols[0]:  # First column for image and name
+        with cols[0]:  
             st.image(member["image"], width=150)
             st.subheader(member["name"])
 
-        with cols[1]:  # Second column for academic background
+        with cols[1]: 
             st.write(member["academic_background"])
