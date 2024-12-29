@@ -1,6 +1,5 @@
 customer_info = [
-    'customer_id', 'customer_region', 
-    'customer_age', 'is_repeat_customer'
+    'customer_region', 'customer_age', 'is_repeat_customer'
 ]
 
 temporal_data = [
