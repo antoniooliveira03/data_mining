@@ -122,7 +122,7 @@ if selected == "Explore Data":
 
     # Defining and calling the function for an interactive bar chart
     def interactive_bar(dataframe):
-        cat_feature = st.selectbox('Select Feature', options=categorical_features)
+        cat_feature = st.selectbox('Feature', options=categorical_features)
         color_choice = st.color_picker('Select a plot colour', '#1f77b7')
 
         # If the selected feature is 'region', reclassify it to make it more readable
