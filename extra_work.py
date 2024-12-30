@@ -35,7 +35,12 @@ selected = streamlit_menu()
 
 # Home Page
 if selected == "Home":
-    st.title("Target Sphere Advisors")
+
+    cols = st.columns([1, 7])
+    with cols[0]:
+        st.image('./fotos/company.png')
+    with cols[1]:
+        st.title("Target Sphere Advisors")
 
     # Dropdown for team members
     st.subheader("Project Team")
@@ -51,13 +56,21 @@ if selected == "Home":
 
     # App description
     st.subheader("ABCDEats Inc. Project")
-    st.write('Consumers today are becoming more selective about the businesses they support and where they spend their \
-             money. This makes it essential for companies to develop a deep understanding of their customer base in order \
-             to tailor their services and marketing strategies more effectively.')
+    st.write('Consumers today are becoming more selective about where they buy their products and \
+              where they spend their money. Consequently, it is essential for companies to better \
+             understand their clients and be able to tailor sales and discounts to certain groups \
+             of customers.')
+    st.write(' ')
+    st.write('Knowing this, ABCDEats Inc. approached TargetSphere Advisors about a Customer Segmentation \
+             project, whose goal was to segment customers into distinct groups based on shared characteristics \
+             and their purchasing behaviours. By identifying these unique segments, the company can create more \
+             targeted sales strategies, offer personalized discounts and enhance customer satisfaction and loyalty.')
+
     st.divider()
     
 if selected == "Explore Data":
-    st.title("Model Data and Insights")
+    st.title("Data Exploration")
+    st.divider()
     st.subheader("Analyse the pairwise relation between the numerical features")
 
     # Defining and calling the function for an interactive scatterplot
@@ -75,7 +88,7 @@ if selected == "Explore Data":
     st.divider()
     
     # Creating Hist of numerical
-    st.subheader("Analyse the histograms of Numerical features") 
+    st.subheader("Analyse the distribution of Numerical features") 
 
     def interactive_hist (dataframe):
         box_hist = st.selectbox('Feature', options=numeric_features)
@@ -94,10 +107,13 @@ if selected == "Explore Data":
 
 if selected == "Clustering":
     
-    st.title("Cluster Analysis")
+    st.title("Cluster Exploration")
+    st.divider()
 
     segment_columns = {"Temporal Data": s.temporal_data,
-                       "Expense Data": s.spending_orders}
+                       "Expense Data": s.spending_orders,
+                       "Cuisine Data": s.cuisine_preferences,
+                       "Product Data": s.product_vendor}
 
     segment = st.selectbox("Select Segment to Analyse", list(segment_columns.keys()))
 
@@ -203,7 +219,7 @@ if selected == "About Us":
         {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./fotos/ab.jpeg", 'academic_background': f'Bsc in Data Science @ Nova IMS;\n\n Msc in Data Science & Advance Analytics @ Nova IMS'},
         {"name": "António Oliveira", "role": "Project Manager", "image": "./fotos/ant.jpg", 'academic_background': """
         
-        📞 +351 916 013 580 | 📧 tzpoliveira@gmail.com | [LinkedIn](#)  
+        📞 +351 916 013 580 | 📧 tzpoliveira@gmail.com | [LinkedIn](https://www.linkedin.com/in/antonio-oliveira02/)  
          
         - **Education**
           - MSc in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
@@ -219,9 +235,28 @@ if selected == "About Us":
           - Events at Nova IMS Debate Club.  
           - Volunteering since 2016 (CASA, WebSummit).
         """},
-        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg"},
-        {"name": "Salvador Domingues", "role": "Data Scientist", "image": "./fotos/salvador.jpg"},
-    ]
+        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg", "academic_background": 'professional hockey player'},
+        {"name": "Salvador Domingues",
+            "role": "Data Scientist",
+            "image": "./fotos/salvador.jpg",
+            "academic_background": """
+                📞 +351 919 265 520 | 📧 salvadordomingues@gmail.com | [LinkedIn](https://linkedin.com/in/salvador-domingues)  
+                
+                - **Education**
+                    - MSc in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
+                    - BSc in Computer Science & Business Management (2020-2024) @ Iscte-IUL.
+                    - Erasmus @ University of Granada (2022-2023).  
+
+                - **Experience**: 
+                    - **Summer Intern** @ NTT Data (2024).  
+                    - **Summer Intern** @ Critical Software (2022).  
+
+                - **Extracurriculars**:  
+                    - Federated Basketball Player (2009-2018) @ SL Benfica, Carnide Clube.  
+                    - Passionate about swimming and fitness.  
+            """},
+
+            ]
     
     # Display team members in columns
     cols = st.columns(len(team_members))
@@ -236,6 +271,8 @@ if selected == "About Us":
 
     # Now add the second section for background information
     st.subheader("Academic Background of Our Team")
+    st.write("")
+    st.write("")
 
     # Create two columns: one for image and name, another for background info
     for member in team_members:
@@ -244,6 +281,25 @@ if selected == "About Us":
         with cols[0]:  
             st.image(member["image"], width=150)
             st.subheader(member["name"])
+            st.write("")
 
         with cols[1]: 
             st.write(member["academic_background"])
+            st.write("")
+
+    st.divider()
+    cols = st.columns([1, 7])
+    with cols[0]:
+        st.image('./fotos/company.png')
+    with cols[1]:
+        st.subheader("TargetSphere Advisors")
+
+    st.write(' ')
+    st.write("The TargetSphere Advisors team consists of a \
+             Data-Driven organisation focused on implementing \
+             Machine Learning solutions for prediction or clustering purposes. \
+             We were founded in 2021, and since then have developed several projects \
+             in the Machine Learning area of expertise. TargetSphere Advisors started with \
+             three members, and recently expanded its team with a fourth member, as it is believed \
+             the project presented by ABCDEats Inc. would require more manpower than initially available. ")
+    
