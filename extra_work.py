@@ -19,6 +19,19 @@ numeric_features = ['customer_age', 'vendor_count', 'product_count', 'is_chain',
                     *['DOW_' + str(i) for i in range(7)],
                     *[col for col in data.columns if col.startswith('CUI_')]]
 
+# Create the list of categorical features
+categorical_features = [
+    'customer_region', 'last_promo', 'payment_method', 
+    'is_chain', 'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
+    'pay_CARD', 'pay_CASH'
+]
+
+# Create the list of binary features
+binary_features = [
+    'is_chain', 'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
+    'pay_CARD', 'pay_CASH'
+]
+
 def streamlit_menu():
     selected = option_menu(
         menu_title=None,
@@ -104,6 +117,44 @@ if selected == "Explore Data":
     interactive_hist (data)
 
     st.divider()
+
+    st.subheader("Analyse the distribution of Categorical features")
+
+    # Defining and calling the function for an interactive bar chart
+    def interactive_bar(dataframe):
+        cat_feature = st.selectbox('Select Feature', options=categorical_features)
+        color_choice = st.color_picker('Select a plot colour', '#1f77b7')
+
+        # If the selected feature is 'region', reclassify it to make it more readable
+        if cat_feature == 'customer_region':  # You can add more conditions for other columns like this
+            dataframe[cat_feature] = dataframe[cat_feature].apply(lambda x: f"Region {x}")
+        
+        # Loop through the list of binary features and apply the map operation
+        for feature in binary_features:
+            if feature in dataframe.columns:
+                dataframe[feature] = dataframe[feature].map({0: 'No', 1: 'Yes'})
+
+        # Create the histogram
+        bar_chart = px.histogram(dataframe, x=cat_feature)
+
+        # Update the color of the bars using the color choice
+        bar_chart.update_traces(marker=dict(color=color_choice))
+
+        # Add additional customization, like titles and axis labels
+        bar_chart.update_layout(
+            xaxis_title=cat_feature,
+            yaxis_title='Count',
+            title=f"Distribution of {cat_feature}",
+            template="plotly_dark"  # Optional: apply a theme to the chart
+        )
+
+        # Display the chart
+        st.plotly_chart(bar_chart)
+
+    interactive_bar(data)
+
+    st.divider()
+
 
 if selected == "Clustering":
     
