@@ -354,3 +354,87 @@ if selected == "About Us":
              three members, and recently expanded its team with a fourth member, as it is believed \
              the project presented by ABCDEats Inc. would require more manpower than initially available. ")
     
+    st.write(' ')
+    st.markdown('<h2 style="text-align: center;">Our Vision</h2>', unsafe_allow_html=True)
+    st.write(' ')
+    st.image('./fotos/vision.jpg')
+
+   
+    st.write('At TargetSphere Advisors, our vision for extends beyond this project\'s scope and \
+            aims to contribute to the broader field of Data Analytics and Business Intelligence. Through \
+            our company, we seek to demonstrate how effective data-driven decision-making can unlock deeper \
+            insights and guide businesses towards more informed strategies.')
+
+    st.write('The creation of an interactive website showcasing our Cluster Analysis and Data Visualizations \
+            represents our commitment to making complex data accessible and engaging for both technical and non-technical \
+            users. We envision this platform evolving into a dynamic tool that not only illustrates the power of data but also \
+            fosters a collaborative environment for data exploration. In the future, we hope to:')
+
+    
+    st.markdown('''
+    - **Expand**:  
+    Work with more companies in order to develop more projects that provide users with an even richer experience. By continually adding new data and insights, we aim to offer a comprehensive, up-to-date resource for exploring industry-specific trends and patterns.
+    
+    - **Improve User Engagement**:  
+    Enhance the interactivity of the website with more advanced features, such as personalized data dashboards, real-time data updates, and predictive analytics. Our goal is to create a tool that goes beyond static visualization to offer actionable insights for decision-making.
+    
+    - **Foster Education and Collaboration**:  
+    We envision the website becoming a platform for learning and collaboration, where professionals, students, and enthusiasts alike can explore data, share insights, and learn from each other. By making complex analytical techniques more approachable, we hope to inspire the next generation of data scientists and business analysts.
+    ''')
+
+    st.write('Ultimately, our vision is to empower businesses and individuals with the tools they need to make data-driven decisions,\
+            all while fostering an environment of innovation, collaboration, and continuous learning.')
+
+    st.write(' ')
+    st.markdown('<h2 style="text-align: center;">Our Values</h2>', unsafe_allow_html=True)
+    st.write(' ')
+    st.image('./fotos/values.png')
+
+    st.write('Our values are the foundation of our approach to Data Management. '
+         'They guide how we work, how we collaborate, and how we deliver value to our clients and the broader community.')
+
+    st.markdown('''
+    1. **Integrity**:  
+    We believe in transparency, honesty, and ethical conduct in all our projects. From data collection to analysis, we ensure that our methodologies are robust, and our findings are accurate and reliable. Our commitment to integrity builds trust with our clients and stakeholders.
+
+    2. **Innovation**:  
+    We constantly strive to push the boundaries of what's possible with data. Our team is dedicated to exploring new techniques, tools, and technologies to solve complex problems and create innovative solutions. We embrace a mindset of continuous learning and adaptation.
+
+    3. **Collaboration**:  
+    We value teamwork and believe that the best solutions come from collective effort. By fostering a collaborative environment, both within our team and with our clients, we create a space where ideas can be freely shared, and diverse perspectives can drive better outcomes.
+
+    4. **Excellence**:  
+    We are committed to delivering the highest quality of work. Our focus on excellence means we rigorously test our assumptions, validate our results, and continuously improve our methods to ensure that our clients receive the best possible insights and recommendations.
+
+    5. **Sustainability**:  
+    We recognize the impact that data-driven decisions can have on the environment and society. We aim to develop solutions that are not only effective but also sustainable, with long-term benefits for both our clients and the communities we serve.
+
+    6. **Empowerment**:  
+    We believe in empowering others with the knowledge and tools to make data-driven decisions. Through education, transparency, and user-friendly solutions, we enable businesses, professionals, and individuals to harness the full potential of their data.
+    ''')
+
+    st.divider()
+    st.write(' ')
+    st.subheader('Let\'s Connect!')
+
+    st.write('We at TargetSphere Advisors are passionate about transforming data into actionable insights that drive meaningful results. '
+            'Our team is dedicated to helping businesses make data-driven decisions that lead to success. Whether you\'re looking to explore new strategies, enhance your data capabilities, or collaborate with like-minded professionals, we would love to hear from you.')
+
+
+    st.write('**Contact Us**')
+    st.write('If you have any questions, need more information, or want to learn how we can help you, feel free to reach out. We believe in building relationships and are always open to discussing how we can work together to achieve your goals.')
+    cols2 = st.columns(3) 
+    with cols2[0]:  
+        st.write("**Email 📩**")
+        st.write("geral@targetsphere.com")
+    with cols2[1]:  
+        st.write("**Phone 📞**")
+        st.write("+351 21 345 8765")
+    with cols2[2]:  
+            st.write("**Address 🏢**")
+            st.write("Rua da Data, 251, Lisbon, Portugal")
+
+    st.divider()
+
+    st.write('**Join Us in Shaping the Future of Data**')
+    st.write('As we continue to innovate and explore new frontiers in data analytics, we invite you to be part of our journey. Stay connected with us through our updates, events, and exciting new projects. Together, we can unlock the power of data to drive better outcomes for businesses and communities alike.')
