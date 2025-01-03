@@ -277,15 +277,15 @@ def plot_hierarchical_dendrograms(data, path=None, linkages=["ward", "complete",
     plt.show()
 
 
-def plot_dim_reduction(embedding, targets = None, 
-                       technique = 'UMAP',
-                       figsize = (10, 7)):
-    
+
+def plot_dim_reduction(embedding, targets=None, 
+                       technique='UMAP',
+                       figsize=(10, 7)):
+
     plt.figure(figsize=figsize)
-    
+
     if targets is not None:
         # Ensure targets are in integer format for color mapping
-        labels = np.unique(targets)
         scatter = plt.scatter(
             embedding[:, 0], 
             embedding[:, 1], 
@@ -293,11 +293,18 @@ def plot_dim_reduction(embedding, targets = None,
             cmap='tab10'
         )
 
-        # Create a legend with the class labels and colors
-        handles = [plt.scatter([], [], color=plt.cm.tab10(i), label=label) for i, label in enumerate(labels)]
+        
+        # Create a legend with the class labels and corresponding colors from the scatter plot
+        labels = np.unique(targets)
+        handles = []
+        
+        # Manually create handles using the same colormap as scatter
+        for i, label in enumerate(labels):
+            color = scatter.cmap(scatter.norm(i))  # Use colormap and normalize to get the correct color
+            handles.append(plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10, label=label))
+
         plt.legend(handles=handles, title='Clusters')
 
-        
     else:
         plt.scatter(embedding[:, 0], embedding[:, 1], s=5)
 
@@ -373,28 +380,6 @@ def plot_silhouette(temp_data, possible_k):
 
     return avg_silhouette
 
-
-def plot_cluster_counts(data, cluster_column, color="#568789"):
-
-    # Calculate the number of observations in each cluster
-    cluster_counts = data.groupby([cluster_column]).size()
-    
-    # Create the bar plot
-    ax = cluster_counts.plot(kind="bar", color=color, figsize=(8, 5))
-    
-    # Add labels to the x and y axes
-    plt.xlabel("Cluster", fontsize=12)
-    plt.ylabel("Number of Observations", fontsize=12)
-    plt.xticks(rotation=0)
-    plt.title("Cluster Distribution", fontsize=14)
-
-    # Add the number of observations on top of each bar
-    for idx, value in enumerate(cluster_counts):
-        ax.text(idx, value + 0.5, str(value), ha="center", fontsize=10)
-    
-    # Show the plot
-    plt.tight_layout()
-    plt.show()
 
 ## Cluster Profiling
 def plot_cluster_profiling(df, cluster_labels, cluster_method_name, 
