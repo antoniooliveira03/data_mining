@@ -12,6 +12,11 @@ import matplotlib.cm as cm
 from sklearn.cluster import KMeans, AgglomerativeClustering, MeanShift, DBSCAN
 from hdbscan import HDBSCAN
 from sklearn.mixture import GaussianMixture
+import matplotlib.colors as mpl_colors
+from matplotlib.patches import RegularPolygon
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib import colorbar
+
 
 
 main_color= '#568789'
@@ -379,6 +384,68 @@ def plot_silhouette(temp_data, possible_k):
         plt.show()
 
     return avg_silhouette
+
+
+## SOM Hexagons
+def plot_som_hexagons(som,
+                      matrix,
+                      cmap=cm.Blues,
+                      figsize=(20,20),
+                      annotate=True,
+                      title="SOM Matrix",
+                      cbar_label="Color Scale"
+                ):
+
+    xx, yy = som.get_euclidean_coordinates()
+
+    f = plt.figure(figsize=figsize)
+    ax = f.add_subplot(111)
+
+    ax.set_aspect('equal')
+    ax.set_title(title, fontsize=20)
+
+    colornorm = mpl_colors.Normalize(vmin=np.min(matrix), 
+                                     vmax=np.max(matrix))
+
+    for i in range(xx.shape[0]):
+        for j in range(xx.shape[1]):
+            wy = yy[(i, j)] * np.sqrt(3) / 2
+            hexagon = RegularPolygon((xx[(i, j)], wy), 
+                                 numVertices=6, 
+                                 radius=.95 / np.sqrt(3),
+                                 facecolor=cmap(colornorm(matrix[i, j])), 
+                                 alpha=1)
+            ax.add_patch(hexagon)
+
+            if annotate:
+                annot_vals = np.round(matrix[i, j],2)
+                if annot_vals > 1:
+                    annot_vals = int(annot_vals)
+                
+                ax.text(xx[(i, j)], wy, annot_vals, 
+                        ha='center', va='center', 
+                        fontsize=figsize[1], 
+                        )
+
+    ax.margins(.05)
+    ax.axis("off")
+
+    ## Create a Mappable object
+    cmap_sm = plt.cm.ScalarMappable(cmap=cmap, norm=colornorm)
+    cmap_sm.set_array([])
+    
+    divider = make_axes_locatable(plt.gca())
+    ax_cb = divider.new_horizontal(size="2%", pad=0)    
+    cb1 = colorbar.ColorbarBase(ax_cb, 
+                                orientation='vertical', 
+                                alpha=1,
+                                mappable=cmap_sm
+                               )
+    cb1.ax.get_yaxis().labelpad = 16
+    cb1.ax.set_ylabel(cbar_label, fontsize=18)
+    plt.gcf().add_axes(ax_cb)
+
+    return plt
 
 
 ## Cluster Profiling
