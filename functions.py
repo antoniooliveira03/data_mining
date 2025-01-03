@@ -11,6 +11,7 @@ from sklearn.base import clone
 import matplotlib.cm as cm
 from sklearn.cluster import KMeans, AgglomerativeClustering, MeanShift, DBSCAN
 from hdbscan import HDBSCAN
+from sklearn.mixture import GaussianMixture
 
 
 main_color= '#568789'
@@ -271,9 +272,10 @@ def plot_hierarchical_dendrograms(data, path=None, linkages=["ward", "complete",
 
     # Adjust layout for better visibility
     plt.tight_layout()
-    plt.show()
     if path != None:
         plt.savefig(f'{path}_dendrogram.png')
+    plt.show()
+
 
 def plot_dim_reduction(embedding, targets = None, 
                        technique = 'UMAP',
@@ -536,6 +538,8 @@ def create_and_evaluate_model(df, feats, model_type, **kwargs):
         model = HDBSCAN(**kwargs)
     elif model_type == 'meanshift':
         model = MeanShift(**kwargs)
+    elif model_type == 'gaussian':
+        model = GaussianMixture(**kwargs)
     else:
         raise ValueError(f"Unsupported model_type: {model_type}. Use 'kmeans' or 'hierarchical'.")
     
@@ -663,7 +667,23 @@ def plot_evaluation_scores(df, path=None):
                 )
                 if idx == 0:
                     legend_handles.append(line)  # Add to legend once
-                
+
+        # Plot GMM scores if available
+        if 'gaussian' in df['Model'].values:
+            gaussian_data = df[df['Model'] == 'gaussian']
+            unique_n_components = gaussian_data['n_components'].drop_duplicates()
+
+            for n in unique_n_components:
+                subset = gaussian_data[gaussian_data['n_components'] == n]
+                line, = plt.plot(
+                    subset['n_components'],  
+                    subset[score_name], 
+                    marker='o', 
+                    label=f"GMM (n_components={n})", 
+                    linewidth=2
+                )
+                if idx == 0:
+                    legend_handles.append(line)  # Add to legend once
 
         # Customize the plot
         plt.title(f"{score_name} Score", fontsize=16)
@@ -693,6 +713,6 @@ def plot_evaluation_scores(df, path=None):
 
     # Adjust layout to prevent overlapping subplots
     plt.tight_layout(rect=[0, 0.1, 1, 1])  # Leave space at the bottom for the legend
-    plt.show()
     if path != None:
         plt.savefig(f'{path}_scores.png')
+    plt.show()
