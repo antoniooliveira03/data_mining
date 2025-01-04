@@ -23,7 +23,7 @@ spending_orders = [
     'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
     'payment_method', 'pay_CARD', 'pay_CASH', 
     'payment_method_enc', 'last_promo_enc',
-    *['HR_' + str(i) for i in range(24)], 
+    *['HR_' + str(i) for i in range(1, 24)], 
     *['DOW_' + str(i) for i in range(7)], ]
 
 cuisine_preferences = ['CUI_American',
