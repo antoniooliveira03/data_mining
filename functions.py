@@ -12,6 +12,11 @@ import matplotlib.cm as cm
 from sklearn.cluster import KMeans, AgglomerativeClustering, MeanShift, DBSCAN
 from hdbscan import HDBSCAN
 from sklearn.mixture import GaussianMixture
+import matplotlib.colors as mpl_colors
+from matplotlib.patches import RegularPolygon
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib import colorbar
+
 
 
 main_color= '#568789'
@@ -204,6 +209,17 @@ def avg_hour(row):
 
 #################### Clustering ##############################
 
+def plot_counts(labels):
+    
+    label_counts = pd.Series(labels).value_counts()
+    plt.figure(figsize=(8, 6))
+    label_counts.plot(kind='bar', color=main_color)
+    plt.title('Cluster Label Counts')
+    plt.xlabel('Cluster Label')
+    plt.ylabel('Count')
+    plt.xticks(rotation=0)  
+    plt.show()
+
 def plot_dendrogram(model, **kwargs):
     '''
     Create linkage matrix and then plot the dendrogram
@@ -277,15 +293,15 @@ def plot_hierarchical_dendrograms(data, path=None, linkages=["ward", "complete",
     plt.show()
 
 
-def plot_dim_reduction(embedding, targets = None, 
-                       technique = 'UMAP',
-                       figsize = (10, 7)):
-    
+
+def plot_dim_reduction(embedding, targets=None, 
+                       technique='UMAP',
+                       figsize=(10, 7)):
+
     plt.figure(figsize=figsize)
-    
+
     if targets is not None:
         # Ensure targets are in integer format for color mapping
-        labels = np.unique(targets)
         scatter = plt.scatter(
             embedding[:, 0], 
             embedding[:, 1], 
@@ -293,11 +309,18 @@ def plot_dim_reduction(embedding, targets = None,
             cmap='tab10'
         )
 
-        # Create a legend with the class labels and colors
-        handles = [plt.scatter([], [], color=plt.cm.tab10(i), label=label) for i, label in enumerate(labels)]
+        
+        # Create a legend with the class labels and corresponding colors from the scatter plot
+        labels = np.unique(targets)
+        handles = []
+        
+        # Manually create handles using the same colormap as scatter
+        for i, label in enumerate(labels):
+            color = scatter.cmap(scatter.norm(i))  # Use colormap and normalize to get the correct color
+            handles.append(plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10, label=label))
+
         plt.legend(handles=handles, title='Clusters')
 
-        
     else:
         plt.scatter(embedding[:, 0], embedding[:, 1], s=5)
 
@@ -374,27 +397,67 @@ def plot_silhouette(temp_data, possible_k):
     return avg_silhouette
 
 
-def plot_cluster_counts(data, cluster_column, color="#568789"):
+## SOM Hexagons
+def plot_som_hexagons(som,
+                      matrix,
+                      cmap=cm.Blues,
+                      figsize=(20,20),
+                      annotate=True,
+                      title="SOM Matrix",
+                      cbar_label="Color Scale"
+                ):
 
-    # Calculate the number of observations in each cluster
-    cluster_counts = data.groupby([cluster_column]).size()
-    
-    # Create the bar plot
-    ax = cluster_counts.plot(kind="bar", color=color, figsize=(8, 5))
-    
-    # Add labels to the x and y axes
-    plt.xlabel("Cluster", fontsize=12)
-    plt.ylabel("Number of Observations", fontsize=12)
-    plt.xticks(rotation=0)
-    plt.title("Cluster Distribution", fontsize=14)
+    xx, yy = som.get_euclidean_coordinates()
 
-    # Add the number of observations on top of each bar
-    for idx, value in enumerate(cluster_counts):
-        ax.text(idx, value + 0.5, str(value), ha="center", fontsize=10)
+    f = plt.figure(figsize=figsize)
+    ax = f.add_subplot(111)
+
+    ax.set_aspect('equal')
+    ax.set_title(title, fontsize=20)
+
+    colornorm = mpl_colors.Normalize(vmin=np.min(matrix), 
+                                     vmax=np.max(matrix))
+
+    for i in range(xx.shape[0]):
+        for j in range(xx.shape[1]):
+            wy = yy[(i, j)] * np.sqrt(3) / 2
+            hexagon = RegularPolygon((xx[(i, j)], wy), 
+                                 numVertices=6, 
+                                 radius=.95 / np.sqrt(3),
+                                 facecolor=cmap(colornorm(matrix[i, j])), 
+                                 alpha=1)
+            ax.add_patch(hexagon)
+
+            if annotate:
+                annot_vals = np.round(matrix[i, j],2)
+                if annot_vals > 1:
+                    annot_vals = int(annot_vals)
+                
+                ax.text(xx[(i, j)], wy, annot_vals, 
+                        ha='center', va='center', 
+                        fontsize=figsize[1], 
+                        )
+
+    ax.margins(.05)
+    ax.axis("off")
+
+    ## Create a Mappable object
+    cmap_sm = plt.cm.ScalarMappable(cmap=cmap, norm=colornorm)
+    cmap_sm.set_array([])
     
-    # Show the plot
-    plt.tight_layout()
-    plt.show()
+    divider = make_axes_locatable(plt.gca())
+    ax_cb = divider.new_horizontal(size="2%", pad=0)    
+    cb1 = colorbar.ColorbarBase(ax_cb, 
+                                orientation='vertical', 
+                                alpha=1,
+                                mappable=cmap_sm
+                               )
+    cb1.ax.get_yaxis().labelpad = 16
+    cb1.ax.set_ylabel(cbar_label, fontsize=18)
+    plt.gcf().add_axes(ax_cb)
+
+    return plt
+
 
 ## Cluster Profiling
 def plot_cluster_profiling(df, cluster_labels, cluster_method_name, 
