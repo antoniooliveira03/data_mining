@@ -209,6 +209,17 @@ def avg_hour(row):
 
 #################### Clustering ##############################
 
+def plot_counts(labels):
+    
+    label_counts = pd.Series(labels).value_counts()
+    plt.figure(figsize=(8, 6))
+    label_counts.plot(kind='bar', color=main_color)
+    plt.title('Cluster Label Counts')
+    plt.xlabel('Cluster Label')
+    plt.ylabel('Count')
+    plt.xticks(rotation=0)  
+    plt.show()
+
 def plot_dendrogram(model, **kwargs):
     '''
     Create linkage matrix and then plot the dendrogram
