@@ -267,15 +267,30 @@ if selected == "About Us":
     
     # Define team member details
     team_members = [
-        {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./fotos/ab.jpeg", 'academic_background': f'Bsc in Data Science @ Nova IMS;\n\n Msc in Data Science & Advance Analytics @ Nova IMS'},
+        {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./fotos/ab.jpeg", "academic_background": """
+        📞 +351 969 496 744 | 📧 anabdfarinha@gmail.com | [LinkedIn](https://www.linkedin.com/in/ana-farinha-pt/)  
+        
+        - **Education**
+            - **MSc** in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
+            - **BSc** in Data Science (2021-2024) @ Nova IMS.  
+            - **Erasmus** @ University of Mannheim (2024).  
+
+        - **Experience**: 
+            - **Summer Intern** @ Brighten Consulting (2023).  
+         
+        - **Extracurriculars**:  
+            - Ambassador @ Magma Studios (2024).  
+            - Volunteer @ Web Summit (2023, 2024).  
+        """
+        },
         {"name": "António Oliveira", "role": "Project Manager", "image": "./fotos/ant.jpg", 'academic_background': """
         
         📞 +351 916 013 580 | 📧 tzpoliveira@gmail.com | [LinkedIn](https://www.linkedin.com/in/antonio-oliveira02/)  
          
         - **Education**
-          - MSc in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
-          - BSc in Data Science (2021-2024) @ Nova IMS
-          - Erasmus @ University of Mannheim (2024).
+          - **MSc** in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
+          - **BSc** in Data Science (2021-2024) @ Nova IMS
+          - **Erasmus** @ University of Mannheim (2024).
 
         - **Experience**: 
           - **Summer Intern** @ NTT Data (2024)
@@ -283,10 +298,22 @@ if selected == "About Us":
 
         - **Extracurriculars**:  
           - Marketing at Nova Formula Student.  
-          - Events at Nova IMS Debate Club.  
           - Volunteering since 2016 (CASA, WebSummit).
+         
         """},
-        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg", "academic_background": 'professional hockey player'},
+        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg", "academic_background": """
+        📞 +351 963 248 872 | 📧 mariananeto139@gmail.com | [GitHub](https://github.com/MGN19) | [LinkedIn](https://www.linkedin.com/in/marianagneto)  
+        
+        - **Education**
+            - **MSc** in Data Science & Advanced Analytics (2024-Present) @ Nova Information Management School.  
+            - **BSc** in Data Science (2021-2024) @ Nova Information Management School.  
+            - **Erasmus** @ Hochschule Neu-Ulm, Germany (March 2024 - July 2024).   
+
+        - **Extracurriculars**:
+            - Volunteer @ Banco Alimentar Contra a Fome (2013-Present).  
+            - Volunteer @ ADRA Portugal (2015-2018).  
+    """
+},
         {"name": "Salvador Domingues",
             "role": "Data Scientist",
             "image": "./fotos/salvador.jpg",
@@ -294,9 +321,9 @@ if selected == "About Us":
                 📞 +351 919 265 520 | 📧 salvadordomingues@gmail.com | [LinkedIn](https://linkedin.com/in/salvador-domingues)  
                 
                 - **Education**
-                    - MSc in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
-                    - BSc in Computer Science & Business Management (2020-2024) @ Iscte-IUL.
-                    - Erasmus @ University of Granada (2022-2023).  
+                    - **MSc** in Data Science & Advanced Analytics (2024-2026) @ Nova IMS.  
+                    - **BSc** in Computer Science & Business Management (2020-2024) @ Iscte-IUL.
+                    - **Erasmus** @ University of Granada (2022-2023).  
 
                 - **Experience**: 
                     - **Summer Intern** @ NTT Data (2024).  
