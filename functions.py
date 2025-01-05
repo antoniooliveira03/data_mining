@@ -11,6 +11,7 @@ from sklearn.base import clone
 import matplotlib.cm as cm
 from sklearn.cluster import KMeans, AgglomerativeClustering, MeanShift, DBSCAN
 from hdbscan import HDBSCAN
+from minisom import MiniSom
 from sklearn.mixture import GaussianMixture
 import matplotlib.colors as mpl_colors
 from matplotlib.patches import RegularPolygon
@@ -638,6 +639,7 @@ def cluster_evaluation(df, feats, labels):
     return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
 
 
+
 # Create and Evaluate Models
 def create_and_evaluate_model(df, feats, model_type, **kwargs):
     """
@@ -646,7 +648,7 @@ def create_and_evaluate_model(df, feats, model_type, **kwargs):
     Args:
     - df: DataFrame containing the input data.
     - feats: List of feature names for R² calculation.
-    - model_type: The type of clustering model to use ("kmeans", "hierarchical", "dbscan", "hdbscan", "meanshift").
+    - model_type: The type of clustering model to use ("kmeans", "hierarchical", "dbscan", "hdbscan", "meanshift", "gmm", "som").
     - **kwargs: Additional arguments to pass to the clustering model.
 
     Returns:
@@ -666,11 +668,27 @@ def create_and_evaluate_model(df, feats, model_type, **kwargs):
         model = MeanShift(**kwargs)
     elif model_type == 'gmm':
         model = GaussianMixture(**kwargs)
+    elif model_type == 'som':
+        model = MiniSom(**{key: value for key, value in kwargs.items() if key != 'num_iterations'})
+        
     else:
         raise ValueError(f"Unsupported model_type: {model_type}.")
     
     # Fit the model and get labels
-    labels = model.fit_predict(df)
+    if model_type != 'som':
+        labels = model.fit_predict(df)
+    else:
+        num_iterations = kwargs.get('num_iterations', 1000)
+        # Train the SOM with the specified number of iterations
+        model.train(df, num_iteration=num_iterations)
+        
+        # Get the winning nodes for each data point
+        labels = np.array([model.winner(x) for x in df])
+        
+        # Convert 2D grid positions to 1D cluster labels
+        labels = [x[0] * kwargs['x'] + x[1] for x in labels]  
+      
+        df = pd.DataFrame(df, columns=feats)
     
     # Evaluate clustering performance
     r2, silhouette, calinski_harabasz = cluster_evaluation(df, feats, labels)
@@ -683,6 +701,7 @@ def create_and_evaluate_model(df, feats, model_type, **kwargs):
         "Silhouette": silhouette[0],
         "Calinski-Harabasz": calinski_harabasz[0]
     }
+
 
 # Plot Cluster Evaluation
 def plot_evaluation_scores(df, path=None):
@@ -813,7 +832,27 @@ def plot_evaluation_scores(df, path=None):
                 )
                 if idx == 0:
                     legend_handles.append(line)
+                    
+        if 'som' in df['Model'].values:
+            som_data = df[df['Model'] == 'som']
 
+            # Ensure the data is sorted by num_iterations (x-axis)
+            som_data_sorted = som_data.sort_values(by='num_iterations')
+
+            # Plot the performance across different iterations
+            line, = plt.plot(
+                som_data_sorted['num_iterations'],  # X-axis: Number of iterations
+                som_data_sorted[score_name],  # Y-axis: Corresponding score
+                marker='o',  # Marker style
+                label='SOM',  # Label for the model
+                linestyle='-',  # Connect the dots with a line
+                linewidth=2
+            )
+
+            # Add to the legend only once
+            if idx == 0:
+                legend_handles.append(line)
+        
 
         # Customize the plot
         plt.title(f"{score_name} Score", fontsize=16)
@@ -830,9 +869,12 @@ def plot_evaluation_scores(df, path=None):
         elif 'gmm' in df['Model'].values:
             plt.xticks(sorted(df['n_components'].unique()))
             plt.xlabel("N_components", fontsize=12)
+        elif 'som' in df['Model'].values:
+            plt.xticks(sorted(df['num_iterations'].unique()))
+            plt.xlabel("num_iterations", fontsize=12)
         else:
             plt.xticks(range(int(min(df['n_clusters'])), int(max(df['n_clusters'])) + 1))
-            plt.xlabel("Number of Clusters", fontsizgmme=12)
+            plt.xlabel("Number of Clusters", fontsize=12)
     
     # Add a single legend for all subplots, located outside the last subplot
     plt.legend(
