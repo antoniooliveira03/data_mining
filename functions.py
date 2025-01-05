@@ -637,6 +637,7 @@ def cluster_evaluation(df, feats, labels):
 
     return np.array(r2), np.array(silhouette), np.array(calinski_harabasz)
 
+
 # Create and Evaluate Models
 def create_and_evaluate_model(df, feats, model_type, **kwargs):
     """
@@ -663,8 +664,10 @@ def create_and_evaluate_model(df, feats, model_type, **kwargs):
         model = HDBSCAN(**kwargs)
     elif model_type == 'meanshift':
         model = MeanShift(**kwargs)
+    elif model_type == 'gmm':
+        model = GaussianMixture(**kwargs)
     else:
-        raise ValueError(f"Unsupported model_type: {model_type}. Use 'kmeans' or 'hierarchical'.")
+        raise ValueError(f"Unsupported model_type: {model_type}.")
     
     # Fit the model and get labels
     labels = model.fit_predict(df)
@@ -791,6 +794,26 @@ def plot_evaluation_scores(df, path=None):
                 )
                 if idx == 0:
                     legend_handles.append(line)  # Add to legend once
+                    
+        if 'gmm' in df['Model'].values:
+            gmm_data = df[df['Model'] == 'gmm']
+            unique_covariance_types = gmm_data['covariance_type'].unique()  # Get unique covariance types
+
+            for covariance in unique_covariance_types:
+                # Filter data by covariance type
+                covariance_data = gmm_data[gmm_data['covariance_type'] == covariance]
+
+                # Plot GMM results for the specific covariance type, using n_components for x-axis
+                line, = plt.plot(
+                    covariance_data['n_components'], 
+                    covariance_data[score_name], 
+                    marker='o', 
+                    label=f'GMM (Covariance: {covariance})', 
+                    linewidth=2
+                )
+                if idx == 0:
+                    legend_handles.append(line)
+
 
         # Customize the plot
         plt.title(f"{score_name} Score", fontsize=16)
@@ -804,6 +827,9 @@ def plot_evaluation_scores(df, path=None):
         elif 'dbscan' in df['Model'].values:
             plt.xticks(sorted(df['eps'].unique()))
             plt.xlabel("Epsilon", fontsize=12)
+        elif 'gmm' in df['Model'].values:
+            plt.xticks(sorted(df['n_components'].unique()))
+            plt.xlabel("N_components", fontsize=12)
         else:
             plt.xticks(range(int(min(df['n_clusters'])), int(max(df['n_clusters'])) + 1))
             plt.xlabel("Number of Clusters", fontsize=12)
@@ -823,6 +849,7 @@ def plot_evaluation_scores(df, path=None):
     if path != None:
         plt.savefig(f'{path}_scores.png')
     plt.show()
+
 
 # Model Comparison
 def model_comparison(df_melted, metrics, model_for_line, line_color='red', line_style='--', marker='o', figsize=(8, 6)):
