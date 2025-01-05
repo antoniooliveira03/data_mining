@@ -5,28 +5,26 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import segmentation as s
-
-# Clustering
 from scipy.cluster.hierarchy import dendrogram, linkage
 from sklearn.preprocessing import RobustScaler
 
-data = pd.read_csv('./data/preprocessed_data.csv')
+data = pd.read_csv('./data/data.csv')
 
-# Create the list of numeric features 
+# numeric features 
 numeric_features = ['customer_age', 'vendor_count', 'product_count', 'is_chain',
                     'first_order', 'last_order',
                     *['HR_' + str(i) for i in range(24)],
                     *['DOW_' + str(i) for i in range(7)],
                     *[col for col in data.columns if col.startswith('CUI_')]]
 
-# Create the list of categorical features
+# categorical features
 categorical_features = [
     'customer_region', 'last_promo', 'payment_method', 
     'is_chain', 'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
     'pay_CARD', 'pay_CASH'
 ]
 
-# Create the list of binary features
+# binary features
 binary_features = [
     'is_chain', 'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
     'pay_CARD', 'pay_CASH'
@@ -302,7 +300,7 @@ if selected == "About Us":
          
         """},
         {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg", "academic_background": """
-        📞 +351 963 248 872 | 📧 mariananeto139@gmail.com | [GitHub](https://github.com/MGN19) | [LinkedIn](https://www.linkedin.com/in/marianagneto)  
+        📞 +351 963 248 872 | 📧 mariananeto139@gmail.com | [LinkedIn](https://www.linkedin.com/in/marianagneto)  
         
         - **Education**
             - **MSc** in Data Science & Advanced Analytics (2024-Present) @ Nova Information Management School.  
