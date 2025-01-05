@@ -601,8 +601,6 @@ def create_and_evaluate_model(df, feats, model_type, **kwargs):
         model = HDBSCAN(**kwargs)
     elif model_type == 'meanshift':
         model = MeanShift(**kwargs)
-    elif model_type == 'gaussian':
-        model = GaussianMixture(**kwargs)
     else:
         raise ValueError(f"Unsupported model_type: {model_type}. Use 'kmeans' or 'hierarchical'.")
     
@@ -726,23 +724,6 @@ def plot_evaluation_scores(df, path=None):
                     marker='o', 
                     linestyle='-',  
                     label=f"HDBSCAN (Method: {method})", 
-                    linewidth=2
-                )
-                if idx == 0:
-                    legend_handles.append(line)  # Add to legend once
-
-        # Plot GMM scores if available
-        if 'gaussian' in df['Model'].values:
-            gaussian_data = df[df['Model'] == 'gaussian']
-            unique_n_components = gaussian_data['n_components'].drop_duplicates()
-
-            for n in unique_n_components:
-                subset = gaussian_data[gaussian_data['n_components'] == n]
-                line, = plt.plot(
-                    subset['n_components'],  
-                    subset[score_name], 
-                    marker='o', 
-                    label=f"GMM (n_components={n})", 
                     linewidth=2
                 )
                 if idx == 0:
