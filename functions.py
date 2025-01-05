@@ -832,7 +832,7 @@ def plot_evaluation_scores(df, path=None):
             plt.xlabel("N_components", fontsize=12)
         else:
             plt.xticks(range(int(min(df['n_clusters'])), int(max(df['n_clusters'])) + 1))
-            plt.xlabel("Number of Clusters", fontsize=12)
+            plt.xlabel("Number of Clusters", fontsizgmme=12)
     
     # Add a single legend for all subplots, located outside the last subplot
     plt.legend(
