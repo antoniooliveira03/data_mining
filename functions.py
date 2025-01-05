@@ -703,6 +703,7 @@ def create_and_evaluate_model(df, feats, model_type, **kwargs):
     }
 
 
+
 # Plot Cluster Evaluation
 def plot_evaluation_scores(df, path=None):
     """
@@ -835,24 +836,21 @@ def plot_evaluation_scores(df, path=None):
                     
         if 'som' in df['Model'].values:
             som_data = df[df['Model'] == 'som']
-
-            # Ensure the data is sorted by num_iterations (x-axis)
-            som_data_sorted = som_data.sort_values(by='num_iterations')
-
-            # Plot the performance across different iterations
-            line, = plt.plot(
-                som_data_sorted['num_iterations'],  # X-axis: Number of iterations
-                som_data_sorted[score_name],  # Y-axis: Corresponding score
-                marker='o',  # Marker style
-                label='SOM',  # Label for the model
-                linestyle='-',  # Connect the dots with a line
-                linewidth=2
-            )
-
-            # Add to the legend only once
-            if idx == 0:
-                legend_handles.append(line)
-        
+            
+            # Plot for each learning rate (unique learning rates)
+            unique_learning_rates = som_data['learning_rate'].drop_duplicates()
+            
+            for lr in unique_learning_rates:
+                subset = som_data[som_data['learning_rate'] == lr]
+                line, = plt.plot(
+                    subset['num_iterations'],  # X-axis as num_iterations
+                    subset[score_name],         # Y-axis as the score
+                    marker='o', 
+                    label=f'SOM (Learning Rate: {lr})', 
+                    linewidth=2
+                )
+                if idx == 0:
+                    legend_handles.append(line) 
 
         # Customize the plot
         plt.title(f"{score_name} Score", fontsize=16)
