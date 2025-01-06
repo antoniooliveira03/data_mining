@@ -941,3 +941,56 @@ def model_comparison(df_melted, metrics, model_for_line, line_color='red', line_
 
         # Show the plot
         plt.show()
+
+
+# Cluster profiles
+def cluster_profiles(df, label_columns, figsize, 
+                     cmap="tab10",
+                     compare_titles=None):
+    """
+    Pass df with labels columns of one or multiple clustering labels. 
+    Then specify these label columns to perform the cluster profile according to them.
+    """
+    
+    if compare_titles is None:
+        compare_titles = [""] * len(label_columns)
+        
+    fig, axes = plt.subplots(nrows=len(label_columns), 
+                             ncols=1,  # Changed to 1 column since we only need the line chart
+                             figsize=figsize, 
+                             constrained_layout=True,
+                             squeeze=False)
+    for ax, label, titl in zip(axes, label_columns, compare_titles):
+        # Filtering df
+        drop_cols = [i for i in label_columns if i != label]
+        dfax = df.drop(drop_cols, axis=1)
+        
+        # Getting the cluster centroids
+        centroids = dfax.groupby(by=label, as_index=False).mean()
+        
+        # Convert label column to string for plotting
+        centroids[label] = centroids[label].astype(str)
+        
+        # Setting Data
+        pd.plotting.parallel_coordinates(
+            centroids, 
+            label, 
+            color=sns.color_palette(cmap),
+            ax=ax[0]
+        )
+
+        # Setting Layout
+        handles, _ = ax[0].get_legend_handles_labels()
+        cluster_labels = ["Cluster {}".format(i) for i in range(len(handles))]
+        ax[0].annotate(text=titl, xy=(0.95, 1.1), xycoords='axes fraction', fontsize=13, fontweight='heavy') 
+        ax[0].axhline(color="black", linestyle="--")
+        ax[0].set_title("Cluster Means - {} Clusters".format(len(handles)), fontsize=13)
+        ax[0].set_xticklabels(ax[0].get_xticklabels(), 
+                              rotation=40,
+                              ha='right')
+        
+        ax[0].legend(handles, cluster_labels,
+                     loc='center left', bbox_to_anchor=(1, 0.5), title=label)  # Adaptable to number of clusters
+        
+    plt.suptitle("Cluster Simple Profiling", fontsize=23)
+    plt.show()
