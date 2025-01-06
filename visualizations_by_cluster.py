@@ -96,3 +96,51 @@ def plot_grouped_bar_chart(df, x_col, y_col, labels_col):
 
     # Show the plot
     fig.show()
+    
+def plot_customer_region_scatter(merged_df, labels_col):
+    """
+    Creates a scatter plot of customer regions by cluster labels with varying point size based on the count of customers.
+    This version ensures that the labels have a distinct color and no gradient.
+
+    Parameters:
+    - merged_df (pd.DataFrame): The dataframe containing the columns 'customer_region', labels_col, and customer count data.
+    - labels_col (str): The column name containing cluster labels to use for y-axis and point coloring.
+
+    Returns:
+    - A Plotly scatter plot.
+    """
+    
+    # Calculate the count of customers for each unique combination of customer_region and label
+    merged_df['customer_count'] = merged_df.groupby(['customer_region', labels_col])['customer_region'].transform('count')
+    
+    # Ensure that 'labels_col' is treated as categorical
+    merged_df[labels_col] = merged_df[labels_col].astype(str)  # Convert labels_col to string type to treat it as categorical
+    
+    # Create a color map for labels (each label gets a distinct color)
+    label_colors = {label: px.colors.qualitative.Set1[i % len(px.colors.qualitative.Set1)] for i, label in enumerate(merged_df[labels_col].unique())}
+
+    # Create the scatter plot
+    fig = px.scatter(
+        merged_df,
+        x='customer_region',  # Use 'customer_region' for the x-axis
+        y=labels_col,  # Use 'label' (cluster labels) for the y-axis
+        color=labels_col,  # Color points based on cluster label
+        size='customer_count',  # Vary size based on customer count in region and label combination
+        color_discrete_map=label_colors,  # Use the predefined label-to-color map
+        labels={'customer_region': 'Customer Region', f'{labels_col}': 'Cluster Label', 'customer_count': 'Customer Count'},
+        title='Scatter Plot of Customer Regions by Cluster Label with Customer Count Size',
+        category_orders={  # Ensures x-axis is categorical, no gradient scale
+            'customer_region': merged_df['customer_region'].unique().tolist(),
+            labels_col: merged_df[labels_col].unique().tolist(),
+        }
+    )
+    
+    # Update x-axis to ensure equal spacing for categorical data
+    fig.update_xaxes(type='category')  # Ensures customer_region categories are equally spaced
+    
+    # Ensure no gradient in the legend
+    fig.update_traces(marker=dict(line=dict(width=0)))  # Optional: Removes lines around the scatter points
+    
+    # Display the plot
+    fig.show()
+
