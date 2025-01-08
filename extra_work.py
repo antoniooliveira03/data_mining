@@ -5,10 +5,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import segmentation as s
-from scipy.cluster.hierarchy import dendrogram, linkage
-from sklearn.preprocessing import RobustScaler
+import plots as p
 
-data = pd.read_csv('./data/data.csv')
+data = pd.read_csv('./data/data_for_website_with_labels_no_outliers.csv',
+                   index_col = 'customer_id')
 
 # numeric features 
 numeric_features = ['customer_age', 'vendor_count', 'product_count', 'is_chain',
@@ -29,6 +29,16 @@ binary_features = [
     'is_chain', 'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
     'pay_CARD', 'pay_CASH'
 ]
+
+all_categ = categorical_features + binary_features
+
+cuisine_preferences = [column for column in data.columns if column.startswith('CUI_') and column.endswith('_ratio')]
+product_vendor = [
+    'vendor_count', 'is_chain']
+
+
+
+## WEBSITE
 
 def streamlit_menu():
     selected = option_menu(
@@ -161,8 +171,9 @@ if selected == "Clustering":
 
     segment_columns = {"Temporal Data": s.temporal_data,
                        "Expense Data": s.spending_orders,
-                       "Cuisine Data": s.cuisine_preferences,
-                       "Product Data": s.product_vendor}
+                       "Cuisine Data": cuisine_preferences,
+                       "Product Data": product_vendor,
+                       "All Segments": list(data.columns)}
 
     segment = st.selectbox("Select Segment to Analyse", list(segment_columns.keys()))
 
@@ -170,91 +181,62 @@ if selected == "Clustering":
     selected_columns = segment_columns[segment]
     filtered_data = data[selected_columns]
 
+    label_columns = ["temp_data_labels", "customer_data_labels", "spending_data_labels", "product_data_labels", "cuisine_data_labels", 'merged_labels']
+    selectable_columns = [col for col in selected_columns if col not in label_columns]
+
     # Display selected segment columns
-    st.write(f"Columns in {segment} Segment")
     with st.expander("View Columns in This Segment"):
         st.write(selected_columns)
 
-    scaled_data = scaled_data = RobustScaler().fit_transform(filtered_data)
+    st.write(' ')
+    st.subheader('Cluster Profiles')
 
 
-    # HIERARCHICAL
-    st.subheader("Hierarchical Clustering")
-    linkage_method = st.selectbox("Select Linkage Method", ["ward", "single", "complete", "average"])
+    if segment == "All Segments":
+        features = st.multiselect(
+            "Select Features to Include", 
+            selected_columns, 
+            default=selected_columns[2:4]
+        )
+    else:
+        features = st.multiselect(
+            "Select Features to Include",
+            selectable_columns,
+            default=selectable_columns 
+        )
 
-    #linkage_matrix = linkage(data[numeric_features], method=linkage_method)
+    # Allow user to choose clustering label column
+    label_column = st.selectbox("Select Clustering Label Column", [col for col in data.columns if col.endswith("labels")])
 
-    # Plot the dendrogram
-    #st.subheader(f"Dendrogram Using {linkage_method.capitalize()} Linkage")
-    #fig, ax = plt.subplots(figsize=(10, 6))
-    #dendrogram(linkage_matrix, truncate_mode='level', p=5, leaf_rotation=90, ax=ax)
-    #plt.title(f"Dendrogram ({linkage_method.capitalize()} Linkage)")
-    #plt.xlabel("Data Points")
-    #plt.ylabel("Distance")
-    #st.pyplot(fig)
-
-    # K-MEANS
-    from sklearn.cluster import KMeans
-    from sklearn.decomposition import PCA
-    st.subheader("K-Means Clustering")
+    # Plot if features are selected
+    if features and label_column:
+        st.write(f"Plotting Cluster Profiles for {segment} Segment")
+        p.cluster_profiles(df=data[features + [label_column]], 
+                         label_columns=[label_column],
+                         figsize=(10, 6))
+    else:
+        st.warning("Please select at least one feature and a label column.")
 
 
-    # Select number of clusters
-    num_clusters = st.slider("Select Number of Clusters", min_value=2, max_value=10, value=3, step=1)
+    st.write(' ')
+    st.subheader('Dimensionality Reduction Visualisation')
 
-    # Apply K-Means
-    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
-    filtered_data['Cluster'] = kmeans.fit_predict(scaled_data)
+    technique = st.radio("Select Dimensionality Reduction Technique", options=['UMAP', 't-SNE'])
 
-    # Visualize Clusters using PCA
-    pca = PCA(n_components=2)
-    pca_result = pca.fit_transform(scaled_data)
-    filtered_data['PCA1'] = pca_result[:, 0]
-    filtered_data['PCA2'] = pca_result[:, 1]
+    if technique == 'UMAP':
+        n_neighbors = st.slider("Select Number of Neighbors for UMAP", min_value=2, max_value=100, value=15)
 
-    st.subheader("Cluster Visualization")
-    fig = px.scatter(
-        filtered_data, x='PCA1', y='PCA2',
-        color='Cluster',
-        title=f"K-Means Clustering with {num_clusters} Clusters",
-        color_continuous_scale=px.colors.qualitative.Set1
-    )
-    st.plotly_chart(fig)
-
-    # Display Cluster Centroids
-    st.subheader("Cluster Centroids")
-    centroids = pd.DataFrame(kmeans.cluster_centers_, columns=selected_columns)
-    st.dataframe(centroids)
-
-    # View Cluster Sizes
-    st.subheader("Cluster Sizes")
-    cluster_sizes = filtered_data['Cluster'].value_counts().reset_index()
-    cluster_sizes.columns = ['Cluster', 'Count']
-    st.dataframe(cluster_sizes)
-
-    st.subheader("Cluster Means")
-    # View Mean values for each cluster
-    selected_cluster = st.selectbox("Select Cluster", range(num_clusters))
-    cluster_data = filtered_data[filtered_data['Cluster'] == selected_cluster]
-
-    # Calculate the mean values for the selected cluster
-    cluster_means = cluster_data[selected_columns].mean()
-
-    # Convert to DataFrame and set the correct column names
-    cluster_means_df = cluster_means.to_frame()
-    cluster_means_df = cluster_means_df.T
-
-    # Reset index to remove the default index column and hide it
-    cluster_means_df.reset_index(drop=True, inplace=True)
-
-    # Split the DataFrame into chunks of 9 columns each
-    chunk_size = 9
-    for start in range(0, len(cluster_means_df.columns), chunk_size):
-        end = start + chunk_size
-        chunk = cluster_means_df.iloc[:, start:end]
-        
-        # Display the means with improved formatting for each chunk
-        st.dataframe(chunk, use_container_width=True)
+        if segment == "All Segments":
+            selectable_columns = list(filter(lambda col: col not in all_categ, selectable_columns))
+            p.plot_dim_reduction(data[selectable_columns], technique=technique, 
+                            n_neighbors=n_neighbors, targets=data[label_column])
+            
+        else:
+            p.plot_dim_reduction(data[selected_columns], technique=technique, 
+                            n_neighbors=n_neighbors, targets=data[label_column])
+    else:
+        p.plot_dim_reduction(data[selected_columns], technique=technique, 
+                            targets=data[label_column])
 
 
 if selected == "About Us":

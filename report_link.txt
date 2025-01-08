@@ -2,3 +2,84 @@ https://docs.google.com/document/d/1CoEfxdu8dLeraCkAuQYOjLJkEBhPOgzLM4uYJPKChm8/
 
 
 https://www.google.com/url?sa=i&url=https%3A%2F%2Fhumanyze.com%2Fblog-methods-that-will-improve-cross-team-collaboration-at-work%2F&psig=AOvVaw0YfHjm8MsRvvMUHY2Xl07p&ust=1735929259393000&source=images&cd=vfe&opi=89978449&ved=0CBcQjhxqFwoTCPDovcjW14oDFQAAAAAdAAAAABAJ
+
+
+
+    # HIERARCHICAL
+    st.subheader("Hierarchical Clustering")
+    linkage_method = st.selectbox("Select Linkage Method", ["ward", "single", "complete", "average"])
+
+    #linkage_matrix = linkage(data[numeric_features], method=linkage_method)
+
+    # Plot the dendrogram
+    #st.subheader(f"Dendrogram Using {linkage_method.capitalize()} Linkage")
+    #fig, ax = plt.subplots(figsize=(10, 6))
+    #dendrogram(linkage_matrix, truncate_mode='level', p=5, leaf_rotation=90, ax=ax)
+    #plt.title(f"Dendrogram ({linkage_method.capitalize()} Linkage)")
+    #plt.xlabel("Data Points")
+    #plt.ylabel("Distance")
+    #st.pyplot(fig)
+
+    # K-MEANS
+    from sklearn.cluster import KMeans
+    from sklearn.decomposition import PCA
+    st.subheader("K-Means Clustering")
+
+
+    # Select number of clusters
+    num_clusters = st.slider("Select Number of Clusters", min_value=2, max_value=10, value=3, step=1)
+
+    # Apply K-Means
+    kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+    filtered_data['Cluster'] = kmeans.fit_predict(scaled_data)
+
+    # Visualize Clusters using PCA
+    pca = PCA(n_components=2)
+    pca_result = pca.fit_transform(scaled_data)
+    filtered_data['PCA1'] = pca_result[:, 0]
+    filtered_data['PCA2'] = pca_result[:, 1]
+
+    st.subheader("Cluster Visualization")
+    fig = px.scatter(
+        filtered_data, x='PCA1', y='PCA2',
+        color='Cluster',
+        title=f"K-Means Clustering with {num_clusters} Clusters",
+        color_continuous_scale=px.colors.qualitative.Set1
+    )
+    st.plotly_chart(fig)
+
+    # Display Cluster Centroids
+    st.subheader("Cluster Centroids")
+    centroids = pd.DataFrame(kmeans.cluster_centers_, columns=selected_columns)
+    st.dataframe(centroids)
+
+    # View Cluster Sizes
+    st.subheader("Cluster Sizes")
+    cluster_sizes = filtered_data['Cluster'].value_counts().reset_index()
+    cluster_sizes.columns = ['Cluster', 'Count']
+    st.dataframe(cluster_sizes)
+
+    st.subheader("Cluster Means")
+    # View Mean values for each cluster
+    selected_cluster = st.selectbox("Select Cluster", range(num_clusters))
+    cluster_data = filtered_data[filtered_data['Cluster'] == selected_cluster]
+
+    # Calculate the mean values for the selected cluster
+    cluster_means = cluster_data[selected_columns].mean()
+
+    # Convert to DataFrame and set the correct column names
+    cluster_means_df = cluster_means.to_frame()
+    cluster_means_df = cluster_means_df.T
+
+    # Reset index to remove the default index column and hide it
+    cluster_means_df.reset_index(drop=True, inplace=True)
+
+    # Split the DataFrame into chunks of 9 columns each
+    chunk_size = 9
+    for start in range(0, len(cluster_means_df.columns), chunk_size):
+        end = start + chunk_size
+        chunk = cluster_means_df.iloc[:, start:end]
+        
+        # Display the means with improved formatting for each chunk
+        st.dataframe(chunk, use_container_width=True)
+
