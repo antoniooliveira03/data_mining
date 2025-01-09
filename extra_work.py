@@ -5,7 +5,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import segmentation as s
-import plots as p
+import extra_functions as p
 
 data = pd.read_csv('./data/data_for_website_with_labels_no_outliers.csv',
                    index_col = 'customer_id')
@@ -18,6 +18,8 @@ numeric_features = ['customer_age', 'vendor_count', 'product_count', 'is_chain',
                     *[col for col in data.columns if col.startswith('CUI_')]]
 
 # categorical features
+
+not_encoded = ['last_promo', 'payment_method']
 categorical_features = [
     'customer_region', 'last_promo', 'payment_method', 
     'is_chain', 'promo_DELIVERY', 'promo_DISCOUNT', 'promo_FREEBIE',
@@ -40,19 +42,7 @@ product_vendor = [
 
 ## WEBSITE
 
-def streamlit_menu():
-    selected = option_menu(
-        menu_title=None,
-        options=["Home", "Explore Data", "Clustering", "About Us"],
-        icons=["house", "bar-chart-line", 'basket', "person"],
-        menu_icon="cast",
-        default_index=0,
-        orientation="horizontal",
-    )
-    return selected
-
-
-selected = streamlit_menu()
+selected = p.streamlit_menu()
 
 # Home Page
 if selected == "Home":
@@ -91,152 +81,119 @@ if selected == "Home":
     
 if selected == "Explore Data":
     st.title("Data Exploration")
+    st.write(' ')
+    st.write('In this page we allow our visitors to make an in-depth exploration of the data we worked with \
+             for our most recent project, developed for ABCDEats Inc.')
     st.divider()
+
+    # Pairwise Relationship
     st.subheader("Analyse the pairwise relation between the numerical features")
-
-    # Defining and calling the function for an interactive scatterplot
-    def interactive_scater (dataframe):
-        x_axis_val = st.selectbox('Select X-Axis Value', options=numeric_features)
-        y_axis_val = st.selectbox('Select Y-Axis Value', options=numeric_features)
-        col = st.color_picker('Select a plot colour')
-
-        plot  = px.scatter(dataframe, x=x_axis_val, y=y_axis_val)
-        plot.update_traces(marker = dict(color=col))
-        st.plotly_chart(plot)
-
-    interactive_scater (data)
-
+    p.interactive_scater (data, numeric_features=numeric_features)
     st.divider()
     
-    # Creating Hist of numerical
+    # Histogram
     st.subheader("Analyse the distribution of Numerical features") 
-
-    def interactive_hist (dataframe):
-        box_hist = st.selectbox('Feature', options=numeric_features)
-        color_choice = st.color_picker('Select a plot colour', '#1f77b4')
-        bin_count = st.slider('Select number of bins', min_value=5, max_value=100, value=20, step=1)
-
-        hist  = sns.displot(dataframe[box_hist], color=color_choice, bins=bin_count)
-        
-        plt.title(f"Histogram of {box_hist}")
-        st.pyplot(hist)
-
-        
-    interactive_hist (data)
-
+    p.interactive_hist (data, numeric_features=numeric_features)
     st.divider()
 
+    # Categ bar Chart
     st.subheader("Analyse the distribution of Categorical features")
-
-    # Defining and calling the function for an interactive bar chart
-    def interactive_bar(dataframe):
-        cat_feature = st.selectbox('Feature', options=categorical_features)
-        color_choice = st.color_picker('Select a plot colour', '#1f77b7')
-
-        # If the selected feature is 'region', reclassify it to make it more readable
-        if cat_feature == 'customer_region':  # You can add more conditions for other columns like this
-            dataframe[cat_feature] = dataframe[cat_feature].apply(lambda x: f"Region {x}")
-        
-        # Loop through the list of binary features and apply the map operation
-        for feature in binary_features:
-            if feature in dataframe.columns:
-                dataframe[feature] = dataframe[feature].map({0: 'No', 1: 'Yes'})
-
-        # Create the histogram
-        bar_chart = px.histogram(dataframe, x=cat_feature)
-
-        # Update the color of the bars using the color choice
-        bar_chart.update_traces(marker=dict(color=color_choice))
-
-        # Add additional customization, like titles and axis labels
-        bar_chart.update_layout(
-            xaxis_title=cat_feature,
-            yaxis_title='Count',
-            title=f"Distribution of {cat_feature}",
-            template="plotly_dark"  # Optional: apply a theme to the chart
-        )
-
-        # Display the chart
-        st.plotly_chart(bar_chart)
-
-    interactive_bar(data)
-
+    p.interactive_bar(data, binary_features=binary_features, categorical_features=categorical_features)
     st.divider()
 
 
 if selected == "Clustering":
     
     st.title("Cluster Exploration")
+    st.write(' ')
+    st.write('In this page we allow our visitors to make an in-depth exploration of the clusters we created for \
+            our most recent project, developed for ABCDEats Inc. We took several diferent perspectives, which we allo \
+            the user to choose from, and then combined them into one final clustering solution.')
     st.divider()
 
-    segment_columns = {"Temporal Data": s.temporal_data,
-                       "Expense Data": s.spending_orders,
+    segment_columns = {
+                       "All Segments": list(data.columns),
                        "Cuisine Data": cuisine_preferences,
-                       "Product Data": product_vendor,
-                       "All Segments": list(data.columns)}
+                       "Expense Data": s.spending_orders,
+                       "Temporal Data": s.temporal_data,
+                       "Product Data": product_vendor
+                       }
+    
 
+    default_labels = {
+                    "All Segments": "merged_labels",
+                    "Cuisine Data": "cuisine_data_labels",
+                    "Expense Data": "spending_data_labels",
+                    "Temporal Data": "temp_data_labels",
+                    "Product Data": "product_data_labels"
+                     }
+
+    # Segment selection
     segment = st.selectbox("Select Segment to Analyse", list(segment_columns.keys()))
-
-    # Filter data based on selected segment
     selected_columns = segment_columns[segment]
-    filtered_data = data[selected_columns]
+    excluded_labels = ["temp_data_labels", "customer_data_labels", "spending_data_labels", 
+                    "product_data_labels", "cuisine_data_labels", "merged_labels"]
 
-    label_columns = ["temp_data_labels", "customer_data_labels", "spending_data_labels", "product_data_labels", "cuisine_data_labels", 'merged_labels']
-    selectable_columns = [col for col in selected_columns if col not in label_columns]
+    selectable_columns = p.get_selectable_columns(selected_columns, excluded_labels, not_encoded)
 
-    # Display selected segment columns
+    # Display selected columns
     with st.expander("View Columns in This Segment"):
         st.write(selected_columns)
 
+    # Cluster Profiles
     st.write(' ')
-    st.subheader('Cluster Profiles')
+    st.subheader("Cluster Profiles")
 
+    features = st.multiselect(
+        "Select Features to Include", 
+        selectable_columns, 
+        default=selectable_columns[:2] if segment != "All Segments" else selectable_columns[:4]
+    )
 
-    if segment == "All Segments":
-        features = st.multiselect(
-            "Select Features to Include", 
-            selected_columns, 
-            default=selected_columns[2:4]
-        )
-    else:
-        features = st.multiselect(
-            "Select Features to Include",
-            selectable_columns,
-            default=selectable_columns 
-        )
-
-    # Allow user to choose clustering label column
-    label_column = st.selectbox("Select Clustering Label Column", [col for col in data.columns if col.endswith("labels")])
-
-    # Plot if features are selected
+    # Dynamically set default label column
+    default_label_column = default_labels.get(segment, "")
+    label_column = st.selectbox(
+        "Select Clustering Label Column",
+        [col for col in data.columns if col.endswith("labels")],
+        index=[col for col in data.columns if col.endswith("labels")].index(default_label_column)
+        if default_label_column in data.columns else 0
+    )
+        
     if features and label_column:
-        st.write(f"Plotting Cluster Profiles for {segment} Segment")
-        p.cluster_profiles(df=data[features + [label_column]], 
-                         label_columns=[label_column],
-                         figsize=(10, 6))
+        p.plot_cluster_profiles(data, features, label_column)
     else:
         st.warning("Please select at least one feature and a label column.")
 
-
     st.write(' ')
+    st.write(' ')
+    # Dimensionality Reduction
     st.subheader('Dimensionality Reduction Visualisation')
+    st.write('All features from the selected segment will be used for this visualization.')
 
     technique = st.radio("Select Dimensionality Reduction Technique", options=['UMAP', 't-SNE'])
 
     if technique == 'UMAP':
         n_neighbors = st.slider("Select Number of Neighbors for UMAP", min_value=2, max_value=100, value=15)
 
-        if segment == "All Segments":
-            selectable_columns = list(filter(lambda col: col not in all_categ, selectable_columns))
-            p.plot_dim_reduction(data[selectable_columns], technique=technique, 
-                            n_neighbors=n_neighbors, targets=data[label_column])
-            
+    if st.button("Plot"):
+        # Get the selectable columns
+        to_plot_columns = p.get_selectable_columns(
+            selected_columns, 
+            excluded_categories=not_encoded, 
+            excluded_labels=None
+        )
+        
+        # Subset the data using the columns
+        to_plot = data[to_plot_columns]
+        
+        if technique == 'UMAP':
+            p.plot_dimensionality_reduction(
+                to_plot, technique, label_column, n_neighbors=n_neighbors
+            )
         else:
-            p.plot_dim_reduction(data[selected_columns], technique=technique, 
-                            n_neighbors=n_neighbors, targets=data[label_column])
-    else:
-        p.plot_dim_reduction(data[selected_columns], technique=technique, 
-                            targets=data[label_column])
+            p.plot_dimensionality_reduction(
+                to_plot, technique, label_column
+            )
 
 
 if selected == "About Us":
