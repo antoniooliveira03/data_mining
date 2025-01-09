@@ -125,9 +125,8 @@ def plot_dim_reduction(data, technique='UMAP', n_neighbors=15, targets=None, fig
     elif technique == 't-SNE':
         plt.title('t-SNE Projection')
 
-    # Use Streamlit's st.pyplot to render the Matplotlib plot
     st.pyplot(plt)
-    plt.close()  # Close the plot to avoid overlap in future plots
+    plt.close() 
 
 def plot_dimensionality_reduction(data, technique, label_column, n_neighbors=None):
     """Perform and plot dimensionality reduction."""
@@ -141,9 +140,9 @@ def plot_dimensionality_reduction(data, technique, label_column, n_neighbors=Non
 def get_selectable_columns(columns, excluded_labels=None, excluded_categories=None):
     """Filter out label and categorical columns."""
     if excluded_labels is None:
-        excluded_labels = []  # Default to an empty list if not provided
+        excluded_labels = []  
     if excluded_categories is None:
-        excluded_categories = []  # Default to an empty list if not provided
+        excluded_categories = []  
     
     # Exclude both labels and categories
     return [col for col in columns if col not in excluded_labels and col not in excluded_categories]
@@ -155,7 +154,7 @@ def interactive_bar(dataframe, binary_features, categorical_features):
     color_choice = st.color_picker('Select a plot colour', '#1f77b7')
 
     # If the selected feature is 'region', reclassify it to make it more readable
-    if cat_feature == 'customer_region':  # You can add more conditions for other columns like this
+    if cat_feature == 'customer_region': 
         dataframe[cat_feature] = dataframe[cat_feature].apply(lambda x: f"Region {x}")
     
     # Loop through the list of binary features and apply the map operation
@@ -174,7 +173,7 @@ def interactive_bar(dataframe, binary_features, categorical_features):
         xaxis_title=cat_feature,
         yaxis_title='Count',
         title=f"Distribution of {cat_feature}",
-        template="plotly_dark"  # Optional: apply a theme to the chart
+        template="plotly_dark"  
     )
 
     # Display the chart
@@ -213,3 +212,22 @@ def streamlit_menu():
         orientation="horizontal",
     )
     return selected
+
+
+def plot_boxplot_by_cluster_streamlit(df, labels_col, y_col):
+    """
+    Plot a box plot of a given column against cluster labels with different colors in Streamlit.
+    
+    Parameters:
+    - df: DataFrame containing the data
+    - labels_col: Column name for cluster labels (clusters)
+    - y_col: Column name for the y-axis (the variable to compare by clusters)
+    """
+    fig = px.box(df, x=labels_col, y=y_col, color=labels_col,  
+                 labels={labels_col: 'Cluster', y_col: y_col},
+                 title=f'Box Plot of {y_col} by Cluster')
+
+    fig.update_traces(marker=dict(size=8))  
+    
+    # Display the figure in Streamlit
+    st.plotly_chart(fig, use_container_width=True)
