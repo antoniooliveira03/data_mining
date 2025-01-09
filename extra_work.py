@@ -77,6 +77,7 @@ if selected == "Home":
              and their purchasing behaviours. By identifying these unique segments, the company can create more \
              targeted sales strategies, offer personalized discounts and enhance customer satisfaction and loyalty.')
 
+    st.image('./fotos/abcdeats.jpeg')
     st.divider()
     
 if selected == "Explore Data":
@@ -164,6 +165,17 @@ if selected == "Clustering":
     else:
         st.warning("Please select at least one feature and a label column.")
 
+    # Boxplot
+    st.write(' ')
+    st.write(' ')
+    st.subheader("Boxplot by Cluster")
+    st.write('This plot will use the same Cluster labels as previously selected')
+    cluster_col = label_column
+    value_col = st.selectbox("Select Value Column", options=data.columns)
+    p.plot_boxplot_by_cluster_streamlit(data, cluster_col, value_col)
+
+
+
     st.write(' ')
     st.write(' ')
     # Dimensionality Reduction
@@ -184,8 +196,8 @@ if selected == "Clustering":
         )
         
         # Subset the data using the columns
-        to_plot = data[to_plot_columns]
-        
+        to_plot = data[to_plot_columns + [label_column]]
+
         if technique == 'UMAP':
             p.plot_dimensionality_reduction(
                 to_plot, technique, label_column, n_neighbors=n_neighbors
