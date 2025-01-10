@@ -188,8 +188,6 @@ if selected == "Clustering":
         n_neighbors = st.slider("Select Number of Neighbors for UMAP", min_value=2, max_value=100, value=15)
 
     if st.button("Plot"):
-        # Get the selectable columns
-
 
         to_plot_columns = p.get_selectable_columns(
             selected_columns, 
@@ -197,7 +195,6 @@ if selected == "Clustering":
             excluded_labels=None
         )
 
-        # Subset the data
         to_plot = data[list(to_plot_columns)]
 
         if technique == 'UMAP':
