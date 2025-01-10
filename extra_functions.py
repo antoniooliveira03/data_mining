@@ -99,7 +99,7 @@ def plot_dim_reduction(data, technique='UMAP', n_neighbors=15, targets=None, fig
 
     # Plotting the results
     if targets is not None:
-        # Ensure targets are numpy array for compatibility
+        
         targets = np.array(targets)
         scatter = plt.scatter(
             embedding[:, 0], 
