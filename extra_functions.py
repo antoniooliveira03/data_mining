@@ -99,42 +99,48 @@ def plot_dim_reduction(data, technique='UMAP', n_neighbors=15, targets=None, fig
 
     # Plotting the results
     if targets is not None:
+        # Ensure targets are numpy array for compatibility
+        targets = np.array(targets)
         scatter = plt.scatter(
             embedding[:, 0], 
             embedding[:, 1], 
-            c=np.array(targets).astype(int), 
-            cmap='tab10'
+            c=targets, 
+            cmap='tab10', 
+            s=5
         )
         
         # Create a legend for clusters
-        labels = np.unique(targets)
+        unique_labels = np.unique(targets)
         handles = []
 
-        for i, label in enumerate(labels):
-            color = scatter.cmap(scatter.norm(i))  
-            handles.append(plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=color, markersize=10, label=f'Cluster {label}'))
+        for i, label in enumerate(unique_labels):
+            color = scatter.cmap(scatter.norm(label))
+            handles.append(plt.Line2D([0], [0], marker='o', color='w', 
+                                       markerfacecolor=color, markersize=10, label=f'Cluster {label}'))
 
-        plt.legend(handles=handles, title='Clusters')
+        plt.legend(handles=handles, title='Clusters', loc='best')
 
     else:
         plt.scatter(embedding[:, 0], embedding[:, 1], s=5)
 
     # Title for the plot based on the dimensionality reduction technique
-    if technique == 'UMAP':
-        plt.title('UMAP Projection')
-    elif technique == 't-SNE':
-        plt.title('t-SNE Projection')
-
+    plt.title(f'{technique} Projection')
+    
+    # Display in Streamlit
     st.pyplot(plt)
-    plt.close() 
+    plt.close()
 
 def plot_dimensionality_reduction(data, technique, label_column, n_neighbors=None):
     """Perform and plot dimensionality reduction."""
     st.write(f"Performing Dimensionality Reduction using {technique}")
+
+    features = data.drop(columns=[label_column])
+    labels = data[label_column]
+
     if technique == 'UMAP':
-        plot_dim_reduction(data, technique=technique, n_neighbors=n_neighbors, targets=data[label_column])
+        plot_dim_reduction(features, technique=technique, n_neighbors=n_neighbors, targets=labels)
     else:
-        plot_dim_reduction(data, technique=technique, targets=data[label_column])
+        plot_dim_reduction(features, technique=technique, targets=labels)
 
 
 def get_selectable_columns(columns, excluded_labels=None, excluded_categories=None):

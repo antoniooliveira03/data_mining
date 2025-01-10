@@ -49,7 +49,7 @@ if selected == "Home":
 
     cols = st.columns([1, 7])
     with cols[0]:
-        st.image('./fotos/company.png')
+        st.image('./pictures/company.png')
     with cols[1]:
         st.title("Target Sphere Advisors")
 
@@ -77,7 +77,7 @@ if selected == "Home":
              and their purchasing behaviours. By identifying these unique segments, the company can create more \
              targeted sales strategies, offer personalized discounts and enhance customer satisfaction and loyalty.')
 
-    st.image('./fotos/abcdeats.jpeg')
+    st.image('./pictures/abcdeats.jpeg')
     st.divider()
     
 if selected == "Explore Data":
@@ -189,14 +189,16 @@ if selected == "Clustering":
 
     if st.button("Plot"):
         # Get the selectable columns
+
+
         to_plot_columns = p.get_selectable_columns(
             selected_columns, 
             excluded_categories=not_encoded, 
             excluded_labels=None
         )
-        
-        # Subset the data using the columns
-        to_plot = data[to_plot_columns + [label_column]]
+
+        # Subset the data
+        to_plot = data[list(to_plot_columns)]
 
         if technique == 'UMAP':
             p.plot_dimensionality_reduction(
@@ -216,7 +218,7 @@ if selected == "About Us":
     
     # Define team member details
     team_members = [
-        {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./fotos/ab.jpeg", "academic_background": """
+        {"name": "Ana B. Farinha", "role": "Data Engineer", "image": "./pictures/ab.jpeg", "academic_background": """
         📞 +351 969 496 744 | 📧 anabdfarinha@gmail.com | [LinkedIn](https://www.linkedin.com/in/ana-farinha-pt/)  
         
         - **Education**
@@ -232,7 +234,7 @@ if selected == "About Us":
             - Volunteer @ Web Summit (2023, 2024).  
         """
         },
-        {"name": "António Oliveira", "role": "Project Manager", "image": "./fotos/ant.jpg", 'academic_background': """
+        {"name": "António Oliveira", "role": "Project Manager", "image": "./pictures/ant.jpg", 'academic_background': """
         
         📞 +351 916 013 580 | 📧 tzpoliveira@gmail.com | [LinkedIn](https://www.linkedin.com/in/antonio-oliveira02/)  
          
@@ -250,7 +252,7 @@ if selected == "About Us":
           - Volunteering since 2016 (CASA, WebSummit).
          
         """},
-        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./fotos/mariana.jpg", "academic_background": """
+        {"name": "Mariana G. Neto", "role": "Business Analyst", "image": "./pictures/mariana.jpg", "academic_background": """
         📞 +351 963 248 872 | 📧 mariananeto139@gmail.com | [LinkedIn](https://www.linkedin.com/in/marianagneto)  
         
         - **Education**
@@ -265,7 +267,7 @@ if selected == "About Us":
 },
         {"name": "Salvador Domingues",
             "role": "Data Scientist",
-            "image": "./fotos/salvador.jpg",
+            "image": "./pictures/salvador.jpg",
             "academic_background": """
                 📞 +351 919 265 520 | 📧 salvadordomingues@gmail.com | [LinkedIn](https://linkedin.com/in/salvador-domingues)  
                 
@@ -317,7 +319,7 @@ if selected == "About Us":
     st.divider()
     cols = st.columns([1, 7])
     with cols[0]:
-        st.image('./fotos/company.png')
+        st.image('./pictures/company.png')
     with cols[1]:
         st.subheader("TargetSphere Advisors")
 
@@ -333,7 +335,7 @@ if selected == "About Us":
     st.write(' ')
     st.markdown('<h2 style="text-align: center;">Our Vision</h2>', unsafe_allow_html=True)
     st.write(' ')
-    st.image('./fotos/vision.jpg')
+    st.image('./pictures/vision.jpg')
 
    
     st.write('At TargetSphere Advisors, our vision for extends beyond this project\'s scope and \
@@ -364,7 +366,7 @@ if selected == "About Us":
     st.write(' ')
     st.markdown('<h2 style="text-align: center;">Our Values</h2>', unsafe_allow_html=True)
     st.write(' ')
-    st.image('./fotos/values.png')
+    st.image('./pictures/values.png')
 
     st.write('Our values are the foundation of our approach to Data Management. '
          'They guide how we work, how we collaborate, and how we deliver value to our clients and the broader community.')
